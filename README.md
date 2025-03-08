@@ -135,4 +135,8 @@ For issues or questions, please:
 
 ## License
 
-[Add License Information] [DISCLAIMER.md]
+[MIT License](LICENSE)
+
+## Disclaimer
+
+Please read our [disclaimer](DISCLAIMER.md) for important information about using this software.
