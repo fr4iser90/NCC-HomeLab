@@ -1,7 +1,7 @@
 services:
 
   mysql:
-    image: mariadb
+    image: mariadb:latest
     restart: always
     container_name: owncloud-db
     networks:
@@ -11,7 +11,7 @@ services:
 
   owncloud:
     container_name: owncloud
-    image: owncloud
+    image: owncloud/server:latest
     volumes:
       - ./cloud/html:/var/www/html
       - ./cloud/data:/mnt/data
