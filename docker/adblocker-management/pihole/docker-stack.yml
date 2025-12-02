@@ -1,0 +1,75 @@
+# Docker Swarm Stack für Pi-hole
+# Migration von docker-compose.yml zu docker-stack.yml
+#
+# WICHTIG: Pi-hole sollte auf einem festen Node laufen (DNS muss konsistent sein)
+#
+# Deploy mit:
+#   docker stack deploy -c docker-stack.yml adblocker
+#
+# Status:
+#   docker service ps adblocker_pihole
+
+version: '3.8'
+
+services:
+  pihole:
+    image: pihole/pihole:latest
+    env_file:
+      - pihole.env
+    networks:
+      - proxy
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    ports:
+      # DNS Ports - WICHTIG: mode: host für DNS!
+      # DNS funktioniert nicht gut mit Routing Mesh
+      - target: 53
+        published: 53
+        protocol: tcp
+        mode: host  # Host mode für DNS!
+      - target: 53
+        published: 53
+        protocol: udp
+        mode: host  # Host mode für DNS!
+      - target: 853
+        published: 853
+        protocol: tcp
+        mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      # Pi-hole sollte auf einem festen Node laufen
+      placement:
+        constraints:
+          - node.role == manager
+        # Oder: node.hostname == node1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    volumes:
+      - pihole-config:/etc/pihole
+      - pihole-dnsmasq:/etc/dnsmasq.d
+    # Labels bleiben gleich!
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.pihole.entrypoints=websecure"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN}`)"
+      - "traefik.http.routers.pihole.tls=true"
+      - "traefik.http.routers.pihole-secure.service=pihole"
+      - "traefik.http.routers.pihole.tls.certresolver=http_resolver"
+      - "traefik.http.routers.pihole.middlewares=default@file,admin-whitelist@file,rate-limit@docker"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+
+volumes:
+  pihole-config:
+    driver: local
+  pihole-dnsmasq:
+    driver: local
+
+networks:
+  proxy:
+    external: true
+

@@ -1,0 +1,57 @@
+# Docker Swarm Stack für Portainer
+# Migration von docker-compose.yml zu docker-stack.yml
+#
+# Deploy mit:
+#   docker stack deploy -c docker-stack.yml system
+#
+# Status:
+#   docker service ps system_portainer
+
+version: '3.8'
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+    networks:
+      - proxy
+    dns:
+      - 1.1.1.1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      mode: replicated
+      replicas: 1
+      # Portainer sollte auf Manager Node laufen (für Swarm Management)
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    # Labels bleiben gleich!
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)"
+      - "traefik.http.routers.portainer.tls=true"
+      - "traefik.http.routers.portainer.tls.certresolver=http_resolver"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
+      - "traefik.http.services.portainer.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.portainer.loadbalancer.sticky.cookie.secure=true"
+
+volumes:
+  portainer-data:
+    driver: local
+
+networks:
+  proxy:
+    external: true
+

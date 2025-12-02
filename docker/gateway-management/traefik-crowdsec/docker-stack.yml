@@ -1,0 +1,226 @@
+# Docker Swarm Stack für Traefik + CrowdSec
+# Migration von docker-compose.yml zu docker-stack.yml
+#
+# Deploy mit:
+#   docker stack deploy -c docker-stack.yml gateway
+#
+# Status prüfen:
+#   docker service ls
+#   docker service ps gateway_traefik
+#
+# Logs:
+#   docker service logs gateway_traefik -f
+
+version: '3.8'
+
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    env_file: crowdsec.env
+    hostname: crowdsec
+    healthcheck:
+      test: ["CMD", "cscli", "version"]
+      interval: 20s
+      timeout: 2s
+      retries: 5
+      start_period: 10s
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - crowdsec
+    restart_policy:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+    deploy:
+      mode: replicated
+      replicas: 1
+      # CrowdSec sollte auf einem festen Node laufen (für Logs)
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log/auth.log:/var/log/auth.log:ro
+      - /var/log/traefik:/var/log/traefik:ro
+      - crowdsec-config:/etc/crowdsec
+      - crowdsec-data:/var/lib/crowdsec/data
+
+  traefik:
+    image: traefik:v3.1.0
+    env_file: traefik.env
+    hostname: traefik
+    command:
+      - "--log.level=DEBUG"
+      - "/bin/sh"
+      - "-c"
+      - "chmod 600 /traefik/acme_letsencrypt.json /traefik/tls_letsencrypt.json && traefik"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 10s
+    ports:
+      # Routing Mesh: Ports werden auf ALLEN Nodes verfügbar
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: ingress
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: ingress
+      # Traefik Dashboard (nur localhost)
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: ingress
+        # Optional: Nur auf localhost (braucht host mode)
+        # mode: host
+    networks:
+      - crowdsec
+      - proxy
+    deploy:
+      # Global: Ein Traefik pro Node (für HA)
+      # Oder: replicas: 3 für feste Anzahl
+      mode: global
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      # Optional: Nur auf Manager Nodes
+      # placement:
+      #   constraints:
+      #     - node.role == manager
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log/traefik/:/var/log/traefik/
+      - traefik-config:/traefik.yml:ro
+      - traefik-acme:/traefik
+      - traefik-dynamic:/dynamic-conf:ro
+    # Labels bleiben gleich wie in docker-compose.yml
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
+      - "traefik.http.routers.traefik.priority=1"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=http_resolver"
+      - "traefik.http.services.traefik.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.traefik.loadbalancer.sticky.cookie.secure=true"
+      - "traefik.http.routers.pingweb.rule=PathPrefix(`/ping`)"
+      - "traefik.http.routers.pingweb.service=ping@internal"
+      - "traefik.http.routers.pingweb.entrypoints=websecure"
+      - "traefik.http.middlewares.security-headers.headers.sslRedirect=true"
+      - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.security-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.security-headers.headers.stsPreload=true"
+      - "traefik.http.middlewares.security-headers.headers.customFrameOptionsValue=SAMEORIGIN"
+      - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.security-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.security-headers.headers.referrerPolicy=same-origin"
+      - "traefik.http.middlewares.security-headers.headers.permissionsPolicy=camera=(), microphone=(), geolocation=()"
+      - "traefik.http.middlewares.security-headers.headers.contentSecurityPolicy=default-src 'self'; frame-ancestors 'none'"
+      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.X-Robots-Tag=noindex,nofollow"
+      - "traefik.http.middlewares.rate-limit.ratelimit.average=100"
+      - "traefik.http.middlewares.rate-limit.ratelimit.burst=200"
+      - "traefik.http.middlewares.rate-limit.ratelimit.period=1m"
+
+  traefik_crowdsec_bouncer:
+    image: fbonalair/traefik-crowdsec-bouncer:latest
+    env_file: traefik-crowdsec-bouncer.env
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    hostname: traefik-crowdsec-bouncer
+    networks:
+      - crowdsec
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    depends_on:
+      - crowdsec
+
+  # IP-Updater als Service (statt Container)
+  ip-updater:
+    image: alpine:latest
+    command: |
+      sh -c '
+        update_ip() {
+          CURRENT_IP=$$(cat /dynamic-conf/current_ip 2>/dev/null || echo "")
+          NEW_IP=$$(curl -s https://api.ipify.org)
+          
+          if [ "$$NEW_IP" != "$$CURRENT_IP" ] && [ ! -z "$$NEW_IP" ]; then
+            echo "IP changed from $$CURRENT_IP to $$NEW_IP"
+            echo "$$NEW_IP" > /dynamic-conf/current_ip
+            echo -e "http:\n  middlewares:\n    admin-whitelist:\n      ipWhiteList:\n        sourceRange:\n          - \"192.168.0.0/16\"\n          - \"10.8.0.0/24\"\n          - \"172.16.0.0/12\"\n          - \"172.40.0.0/16\"\n          - \"172.41.0.0/16\"\n          - \"$$NEW_IP/32\"" > /dynamic-conf/custom-ips.yml
+            echo "Updated IP whitelist configuration"
+          fi
+        }
+        
+        apk add --no-cache curl
+        while true; do
+          update_ip
+          sleep 300
+        done'
+    networks:
+      - proxy
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    volumes:
+      - traefik-dynamic:/dynamic-conf:rw
+
+volumes:
+  # WICHTIG: Für Shared Storage (NFS) anpassen!
+  # Beispiel NFS:
+  # traefik-acme:
+  #   driver: local
+  #   driver_opts:
+  #     type: nfs
+  #     o: addr=nfs-server.local,rw
+  #     device: ":/exports/traefik-acme"
+  traefik-acme:
+    driver: local
+  traefik-config:
+    driver: local
+  traefik-dynamic:
+    driver: local
+  crowdsec-config:
+    driver: local
+  crowdsec-data:
+    driver: local
+
+networks:
+  proxy:
+    external: true
+  crowdsec:
+    external: true
+

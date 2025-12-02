@@ -126,12 +126,27 @@ docker-scripts/
 - Service configurations can be updated using the provided update scripts
 - Each service has its own management scripts in its directory
 
+## Documentation
+
+Comprehensive documentation is available in multiple languages:
+
+- 🇩🇪 [Deutsch (German)](./docs/de/) - Vollständige deutsche Dokumentation
+- 🇬🇧 [English](./docs/en/) - Complete English documentation
+
+### Quick Links
+
+- [Initial Setup Tutorial](./docs/de/tutorials/initial-setup.md)
+- [Docker Swarm Guide](./docs/de/guides/docker-swarm.md)
+- [Rootless Docker Guide](./docs/de/guides/rootless-docker.md)
+- [Service Documentation](./docs/de/services/)
+
 ## Support
 
 For issues or questions, please:
-1. Check the service-specific README files
-2. Review the logs in the service directories
-3. Create an issue in the repository
+1. Check the [documentation](./docs/)
+2. Review the service-specific documentation in `docs/services/`
+3. Check the logs in the service directories
+4. Create an issue in the repository
 
 ## License
 
