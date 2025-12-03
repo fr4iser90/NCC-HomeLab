@@ -1,0 +1,38 @@
+# Docker Swarm Stack für Cloudflare Companion
+# Migration von docker-compose.yml zu docker-stack.yml
+#
+# Deploy mit:
+#   docker stack deploy -c docker-stack.yml companion
+#
+# Status prüfen:
+#   docker service ls
+#   docker service ps companion_cloudflare-companion
+#
+# Logs:
+#   docker service logs companion_cloudflare-companion -f
+
+version: '3.8'
+
+services:
+  cloudflare-companion:
+    image: tiredofit/traefik-cloudflare-companion
+    volumes:
+      - cloudflare-logs:/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    env_file: 
+      - ./cloudflare-companion.env
+    deploy:
+      mode: global
+      # Cloudflare Companion sollte auf jedem Node laufen (für Docker Socket Zugriff)
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+volumes:
+  cloudflare-logs:
+    driver: local
+

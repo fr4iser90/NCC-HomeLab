@@ -1,0 +1,26 @@
+# Docker Swarm Stack für DDNS Updater
+# Deploy mit: docker stack deploy -c docker-stack.yml gateway
+
+version: '3.8'
+
+services:
+  ddclient:
+    image: lscr.io/linuxserver/ddclient:latest
+    env_file: ddns-updater.env
+    volumes:
+      - ddns-config:/config
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+volumes:
+  ddns-config:
+    driver: local
+

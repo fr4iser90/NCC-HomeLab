@@ -1,0 +1,46 @@
+# Docker Swarm Stack für Organizr
+# Deploy mit: docker stack deploy -c docker-stack.yml dashboard
+
+version: '3.8'
+
+services:
+  organizr:
+    image: organizr/organizr
+    volumes:
+      - organizr-data:/config
+    dns:
+      - 1.1.1.1
+    ports:
+      - target: 80
+        published: 8003
+        protocol: tcp
+        mode: ingress
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.organizr.entrypoints=websecure"
+      - "traefik.http.routers.organizr.rule=Host(`organizr.${DOMAIN}`)"
+      - "traefik.http.routers.organizr.tls=true"
+      - "traefik.http.routers.organizr.tls.certresolver=http_resolver"
+      - "traefik.http.routers.organizr.middlewares=default@file,admin-whitelist@file,rate-limit@docker"
+      - "traefik.http.services.organizr.loadbalancer.server.port=80"
+      - "traefik.http.services.organizr.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.organizr.loadbalancer.sticky.cookie.secure=true"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  organizr-data:
+    driver: local
+

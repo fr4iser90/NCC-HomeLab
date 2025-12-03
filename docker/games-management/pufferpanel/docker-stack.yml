@@ -1,0 +1,63 @@
+# Docker Swarm Stack für PufferPanel
+# Deploy mit: docker stack deploy -c docker-stack.yml games
+
+version: '3.8'
+
+services:
+  pufferpanel:
+    image: pufferpanel/pufferpanel:latest
+    env_file:
+      - .env.pufferpanel
+    dns:
+      - 1.1.1.1
+    volumes:
+      - pufferpanel-data:/var/lib/pufferpanel
+      - pufferpanel-config:/etc/pufferpanel
+    networks:
+      - proxy
+    ports:
+      - target: 5657
+        published: 5657
+        protocol: tcp
+        mode: host
+      - target: 27015
+        published: 27015
+        protocol: tcp
+        mode: host
+      - target: 27065
+        published: 27065-27075
+        protocol: tcp
+        mode: host
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.pufferpanel.entrypoints=websecure"
+      - "traefik.http.routers.pufferpanel.rule=Host(`pufferpanel.$DOMAIN`)"
+      - "traefik.http.routers.pufferpanel.tls=true"
+      - "traefik.http.routers.pufferpanel.tls.certresolver=http_resolver"
+      - "traefik.http.services.pufferpanel.loadbalancer.server.port=8080"
+      - "traefik.http.routers.pufferpanel.middlewares=default@file"
+      - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.secure=true"
+      - "traefik.tcp.routers.pufferpanel-daemon.entrypoints=games"
+      - "traefik.tcp.routers.pufferpanel-daemon.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.pufferpanel-daemon.service=pufferpanel-daemon"
+      - "traefik.tcp.services.pufferpanel-daemon.loadbalancer.server.port=5657"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  pufferpanel-data:
+    driver: local
+  pufferpanel-config:
+    driver: local
+

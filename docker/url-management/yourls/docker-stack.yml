@@ -1,0 +1,51 @@
+# Docker Swarm Stack für YOURLS
+# Deploy mit: docker stack deploy -c docker-stack.yml url
+
+version: '3.8'
+
+services:
+  yourls:
+    image: yourls
+    networks:
+      - proxy
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.yourls.entrypoints=websecure"
+      - "traefik.http.routers.yourls.rule=Host(`link.${DOMAIN}`)"
+      - "traefik.http.routers.yourls.tls=true"
+      - "traefik.http.routers.yourls.tls.certresolver=http_resolver"
+      - "traefik.http.services.yourls.loadbalancer.server.port=80"
+      - "traefik.http.routers.yourls.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
+      - "traefik.http.services.yourls.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.yourls.loadbalancer.sticky.cookie.secure=true"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: always
+
+  yourls-db:
+    image: mysql
+    networks:
+      - proxy
+    env_file: mysql.env
+    volumes:
+      - yourls-data:/var/lib/mysql
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: always
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  yourls-data:
+    driver: local
+

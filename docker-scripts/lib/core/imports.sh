@@ -22,6 +22,7 @@ source "${DOCKER_SCRIPTS_DIR}/lib/utils/format/output.sh"
 CORE_MODULES=(
     "containers.sh"
     "path.sh"
+    "docker-mode.sh"
 )
 
 for module in "${CORE_MODULES[@]}"; do

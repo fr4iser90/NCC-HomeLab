@@ -1,0 +1,91 @@
+# Docker Swarm Stack für WireGuard
+# Deploy mit: docker stack deploy -c docker-stack.yml vpn
+#
+# WICHTIG: WireGuard braucht host network mode für VPN, daher mode: host für Ports
+
+version: '3.8'
+
+services:
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:latest
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    env_file: wireguard.env
+    volumes:
+      - wireguard-config:/config
+      - wireguard-modules:/lib/modules
+    ports:
+      - target: 51820
+        published: 51820
+        protocol: udp
+        mode: host
+    dns:
+      - 1.1.1.1
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=false"
+    deploy:
+      mode: global
+      # WireGuard sollte auf jedem Node laufen (VPN)
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  wireguard-ui:
+    image: ngoduykhanh/wireguard-ui:latest
+    depends_on:
+      - wireguard
+    cap_add:
+      - NET_ADMIN
+    network_mode: service:wireguard
+    env_file: wireguard.env
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+    volumes:
+      - wireguard-ui-db:/app/db
+      - wireguard-config-ui:/etc/wireguard
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.wireguard-ui.entrypoints=websecure"
+      - "traefik.http.routers.wireguard-ui.rule=Host(`wireguard-ui.${DOMAIN}`)"
+      - "traefik.http.routers.wireguard-ui.tls=true"
+      - "traefik.http.routers.wireguard-ui.tls.certresolver=http_resolver"
+      - "traefik.http.services.wireguard-ui.loadbalancer.server.port=5000"
+      - "traefik.http.routers.wireguard-ui.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
+      - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.secure=true"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  wireguard-config:
+    driver: local
+  wireguard-modules:
+    driver: local
+  wireguard-ui-db:
+    driver: local
+  wireguard-config-ui:
+    driver: local
+

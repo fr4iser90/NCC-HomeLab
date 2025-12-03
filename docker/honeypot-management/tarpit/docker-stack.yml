@@ -1,0 +1,106 @@
+# Docker Swarm Stack für Tarpit (Honeypot)
+# Deploy mit: docker stack deploy -c docker-stack.yml honeypot
+
+version: '3.8'
+
+services:
+  endlessh:
+    image: shizunge/endlessh-go:latest
+    command:
+      - -interval_ms=1000
+      - -logtostderr
+      - -v=1
+      - -enable_prometheus
+      - -geoip_supplier=ip-api
+    networks:
+      - proxy
+    ports:
+      - target: 2222
+        published: 2222
+        protocol: tcp
+        mode: ingress
+      - target: 2112
+        published: 2112
+        protocol: tcp
+        mode: ingress
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=45d
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --web.enable-admin-api
+    networks:
+      - proxy
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    volumes:
+      - prometheus-config:/etc/prometheus
+      - prometheus-data:/prometheus
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.routers.prometheus.tls.certresolver=http_resolver"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.routers.prometheus.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: always
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - proxy
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    env_file:
+      - grafana.env
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - grafana-datasource:/etc/grafana/provisioning/datasources
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=http_resolver"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.grafana.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
+      - "traefik.http.services.grafana.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.grafana.loadbalancer.sticky.cookie.secure=true"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: always
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  prometheus-config:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  grafana-datasource:
+    driver: local
+

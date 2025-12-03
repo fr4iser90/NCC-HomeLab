@@ -1,0 +1,90 @@
+# Docker Swarm Stack für Plex
+# Deploy mit: docker stack deploy -c docker-stack.yml media
+
+version: '3.8'
+
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    env_file:
+      - plex.env
+    dns:
+      - 1.1.1.1
+    volumes:
+      - plex-library:/config
+      - plex-tv:/tv
+      - plex-movies:/movies
+    networks:
+      - proxy
+    ports:
+      - target: 32400
+        published: 32400
+        protocol: tcp
+        mode: host
+      - target: 1900
+        published: 1900
+        protocol: udp
+        mode: host
+      - target: 3005
+        published: 3005
+        protocol: tcp
+        mode: host
+      - target: 5353
+        published: 5353
+        protocol: udp
+        mode: host
+      - target: 8324
+        published: 8324
+        protocol: tcp
+        mode: host
+      - target: 32410
+        published: 32410
+        protocol: udp
+        mode: host
+      - target: 32412
+        published: 32412
+        protocol: udp
+        mode: host
+      - target: 32413
+        published: 32413
+        protocol: udp
+        mode: host
+      - target: 32414
+        published: 32414
+        protocol: udp
+        mode: host
+      - target: 32469
+        published: 32469
+        protocol: tcp
+        mode: host
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.plex.entrypoints=websecure"
+      - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
+      - "traefik.http.routers.plex.tls=true"
+      - "traefik.http.routers.plex.tls.certresolver=http_resolver"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
+      - "traefik.http.routers.plex.middlewares=default@file,admin-whitelist@file"
+      - "traefik.http.services.plex.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.plex.loadbalancer.sticky.cookie.secure=true"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  plex-library:
+    driver: local
+  plex-tv:
+    driver: local
+  plex-movies:
+    driver: local
+
