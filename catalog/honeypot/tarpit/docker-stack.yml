@@ -46,15 +46,17 @@ services:
     volumes:
       - prometheus-config:/etc/prometheus
       - prometheus-data:/prometheus
+    # SECURITY: Metrics UI — Traefik/DNS OFF by default.
     labels:
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      - "traefik.http.routers.prometheus.entrypoints=websecure"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
-      - "traefik.http.routers.prometheus.tls=true"
-      - "traefik.http.routers.prometheus.tls.certresolver=http_resolver"
-      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-      - "traefik.http.routers.prometheus.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
+      # VPN/LAN only — uncomment together with traefik.enable=true:
+      # - "traefik.http.routers.prometheus.entrypoints=websecure"
+      # - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
+      # - "traefik.http.routers.prometheus.tls=true"
+      # - "traefik.http.routers.prometheus.tls.certresolver=http_resolver"
+      # - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      # - "traefik.http.routers.prometheus.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
     deploy:
       mode: replicated
       replicas: 1
@@ -73,17 +75,19 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - grafana-datasource:/etc/grafana/provisioning/datasources
+    # SECURITY: Admin dashboard — Traefik/DNS OFF by default.
     labels:
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      - "traefik.http.routers.grafana.entrypoints=websecure"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
-      - "traefik.http.routers.grafana.tls=true"
-      - "traefik.http.routers.grafana.tls.certresolver=http_resolver"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      - "traefik.http.routers.grafana.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
-      - "traefik.http.services.grafana.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.grafana.loadbalancer.sticky.cookie.secure=true"
+      # VPN/LAN only — uncomment together with traefik.enable=true:
+      # - "traefik.http.routers.grafana.entrypoints=websecure"
+      # - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
+      # - "traefik.http.routers.grafana.tls=true"
+      # - "traefik.http.routers.grafana.tls.certresolver=http_resolver"
+      # - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      # - "traefik.http.routers.grafana.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
+      # - "traefik.http.services.grafana.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.grafana.loadbalancer.sticky.cookie.secure=true"
     deploy:
       mode: replicated
       replicas: 1

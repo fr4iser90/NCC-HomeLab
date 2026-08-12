@@ -13,29 +13,27 @@ services:
       proxy:
     dns:
       - 1.1.1.1
+    # ------------------------------------------------------------------
+    # SECURITY: Portainer mounts the Docker socket (full host control).
+    # Default: NOT exposed via Traefik/DNS. Prefer WireGuard VPN → LAN IP
+    # or SSH tunnel. Do NOT publish to the public internet.
+    #
+    # To enable VPN/LAN-only reverse proxy (still requires admin-whitelist):
+    #   set traefik.enable=true below and keep Auth + admin-whitelist.
+    # ------------------------------------------------------------------
     labels:
-      # Basis-Konfiguration
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      
-      # Router Konfiguration
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)"
-      - "traefik.http.routers.portainer.tls=true"
-      - "traefik.http.routers.portainer.tls.certresolver=http_resolver"
-      
-      # Service Konfiguration
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
-      
-      # Maximale Sicherheit mit allen Middlewares
-      - "traefik.http.routers.portainer.middlewares=default@file,traefikAuth@file,admin-whitelist@file" # ,rate-limit@docker"
-      
-      # Sticky Sessions
-      - "traefik.http.services.portainer.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.portainer.loadbalancer.sticky.cookie.secure=true"
+      # - "traefik.http.routers.portainer.entrypoints=websecure"
+      # - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)"
+      # - "traefik.http.routers.portainer.tls=true"
+      # - "traefik.http.routers.portainer.tls.certresolver=http_resolver"
+      # - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      # - "traefik.http.routers.portainer.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
+      # - "traefik.http.services.portainer.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.portainer.loadbalancer.sticky.cookie.secure=true"
     restart: unless-stopped
 
 networks:
   proxy:
     external: true
-

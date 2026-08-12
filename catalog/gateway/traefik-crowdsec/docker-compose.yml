@@ -49,28 +49,30 @@ services:
       retries: 3
       start_period: 10s
     image: traefik:v3.1.0
+    # ------------------------------------------------------------------
+    # SECURITY: Dashboard/API via DNS is HIGH risk. Default: routers OFF.
+    # Prefer VPN → 127.0.0.1:8080 (bound localhost) or SSH tunnel.
+    # Keep traefik.enable=true so docker-label middlewares (rate-limit) stay
+    # available to other services. Uncomment dashboard routers only with
+    # Auth + admin-whitelist.
+    # ------------------------------------------------------------------
     labels:
-      # Basis-Konfiguration
       - "traefik.docker.network=proxy"
       - "traefik.enable=true"
 
-      # Router Konfiguration (deaktiviert durch traefik.enable=false)
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
-      - "traefik.http.routers.traefik.priority=1"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.tls.certresolver=http_resolver"
-      
-      # Service Konfiguration (deaktiviert)
-      - "traefik.http.services.traefik.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.traefik.loadbalancer.sticky.cookie.secure=true"
-      
-      # Ping Router (deaktiviert)
-      - "traefik.http.routers.pingweb.rule=PathPrefix(`/ping`)"
-      - "traefik.http.routers.pingweb.service=ping@internal"
-      - "traefik.http.routers.pingweb.entrypoints=websecure"
+      # Dashboard (OFF by default — uncomment to expose VPN/LAN only):
+      # - "traefik.http.routers.traefik.entrypoints=websecure"
+      # - "traefik.http.routers.traefik.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
+      # - "traefik.http.routers.traefik.priority=1"
+      # - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
+      # - "traefik.http.routers.traefik.service=api@internal"
+      # - "traefik.http.routers.traefik.tls=true"
+      # - "traefik.http.routers.traefik.tls.certresolver=http_resolver"
+      # - "traefik.http.services.traefik.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.traefik.loadbalancer.sticky.cookie.secure=true"
+      # - "traefik.http.routers.pingweb.rule=PathPrefix(`/ping`)"
+      # - "traefik.http.routers.pingweb.service=ping@internal"
+      # - "traefik.http.routers.pingweb.entrypoints=websecure"
 
       # Middleware Definitionen (verfügbar für andere Services)
       # Security Headers

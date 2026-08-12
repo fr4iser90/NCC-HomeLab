@@ -1,11 +1,8 @@
 # Docker Swarm Stack für Portainer
-# Migration von docker-compose.yml zu docker-stack.yml
+# Deploy: docker stack deploy -c docker-stack.yml system-portainer
 #
-# Deploy mit:
-#   docker stack deploy -c docker-stack.yml system
-#
-# Status:
-#   docker service ps system_portainer
+# SECURITY: Docker socket = high risk. Traefik/DNS exposure is OFF by default.
+# Prefer VPN/LAN access. Enable Traefik labels only with Auth + admin-whitelist.
 
 version: '3.8'
 
@@ -26,7 +23,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      # Portainer sollte auf Manager Node laufen (für Swarm Management)
       placement:
         constraints:
           - node.role == manager
@@ -34,18 +30,16 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
-    # Labels bleiben gleich!
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)"
-      - "traefik.http.routers.portainer.tls=true"
-      - "traefik.http.routers.portainer.tls.certresolver=http_resolver"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
-      - "traefik.http.routers.portainer.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
-      - "traefik.http.services.portainer.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.portainer.loadbalancer.sticky.cookie.secure=true"
+      labels:
+        - "traefik.enable=false"
+        - "traefik.docker.network=proxy"
+        # VPN/LAN only — uncomment together with traefik.enable=true:
+        # - "traefik.http.routers.portainer.entrypoints=websecure"
+        # - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN}`)"
+        # - "traefik.http.routers.portainer.tls=true"
+        # - "traefik.http.routers.portainer.tls.certresolver=http_resolver"
+        # - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+        # - "traefik.http.routers.portainer.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
 
 volumes:
   portainer-data:
@@ -54,4 +48,3 @@ volumes:
 networks:
   proxy:
     external: true
-

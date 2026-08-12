@@ -24,19 +24,28 @@ This overview shows all services, their access methods, and security risk assess
 | **WireGuard VPN** | 51820/UDP | ✅ LOW | WireGuard encryption | ✅ Public (needed for VPN) |
 | **PufferPanel Game Ports** | 27015+ | ⚠️ MEDIUM | Game Server Security | ⚠️ Only if needed |
 
+### Admin UIs — Traefik/DNS OFF by default (VPN/LAN preferred)
+
+| Service | DNS | Risk | Protection | Status |
+|---------|-----|------|------------|--------|
+| **Traefik Dashboard** | `traefik.domain` | ⚠️ **HIGH** | Routers commented out; API on `127.0.0.1:8080` | ✅ Unexposed by default |
+| **Portainer** | `portainer.domain` | ⚠️ **HIGH** | `traefik.enable=false` | ✅ Unexposed by default |
+| **WireGuard UI** | `wireguard-ui.domain` | ⚠️ **HIGH** | `traefik.enable=false` (UDP 51820 stays public) | ✅ Unexposed by default |
+| **PufferPanel** | `pufferpanel.domain` | ⚠️ **HIGH** | `traefik.enable=false` (game ports stay published) | ✅ Unexposed by default |
+| **Grafana / Prometheus** | `grafana` / `prometheus.domain` | ⚠️ **HIGH** | `traefik.enable=false` | ✅ Unexposed by default |
+
+Optional: set `enable=true` (or uncomment Traefik dashboard routers) **only** with Auth + `admin-whitelist`.
+
 ### DNS Access with admin-whitelist (ONLY VPN/LAN)
 
 | Service | DNS | Risk | Protection | Status |
 |---------|-----|------|------------|--------|
-| **Traefik Dashboard** | `traefik.domain` | ⚠️ **HIGH** | Basic Auth + Whitelist | ✅ Protected |
-| **Portainer** | `portainer.domain` | ⚠️ **HIGH** | Basic Auth + Whitelist | ✅ Protected |
 | **Pi-hole** | `pihole.domain` | ⚠️ MEDIUM | Whitelist + Rate Limit | ✅ Protected |
 | **Jellyfin** | `jellyfin.domain` | ⚠️ MEDIUM | Whitelist | ✅ Protected |
 | **Plex** | `plex.domain` | ⚠️ MEDIUM | Whitelist | ✅ Protected |
 | **Organizr** | `organizr.domain` | ⚠️ MEDIUM | Whitelist + Rate Limit | ✅ Protected |
 | **Yourls** | `link.domain` | ⚠️ LOW | Basic Auth + Whitelist | ✅ Protected |
 | **OwnCloud** | `owncloud.domain` | ⚠️ MEDIUM | Whitelist + Rate Limit | ✅ Protected |
-| **WireGuard UI** | `wireguard.domain` | ⚠️ **HIGH** | Basic Auth + Whitelist | ✅ Protected |
 | **Bitwarden Admin** | `bw.domain/admin` | ⚠️ **HIGH** | Basic Auth + Whitelist | ✅ Protected |
 
 ### DNS Access WITHOUT admin-whitelist (⚠️ PUBLIC!)
@@ -44,11 +53,8 @@ This overview shows all services, their access methods, and security risk assess
 | Service | DNS | Risk | Protection | Status |
 |---------|-----|------|------------|--------|
 | **Bitwarden Sync** | `bw.domain` | ✅ **LOW** | Only `default@file` | ✅ Public (needed for sync) |
-| **PufferPanel** | `pufferpanel.domain` | ⚠️ **MEDIUM-HIGH** | Only `default@file` | ⚠️ **PUBLIC - NOT recommended!** |
 
-> **⚠️ IMPORTANT:** 
-> - Bitwarden Sync is intentionally public (needed for Mobile/Desktop sync)
-> - PufferPanel should add `admin-whitelist@file` middleware!
+> **⚠️ IMPORTANT:** Bitwarden Sync is intentionally public (needed for Mobile/Desktop sync).
 
 ### Local Only (127.0.0.1 or local ports)
 
@@ -66,9 +72,8 @@ This overview shows all services, their access methods, and security risk assess
 ### ✅ Recommended Configuration
 
 1. **Admin Interfaces ONLY via VPN/LAN**
-   - Traefik Dashboard
-   - Portainer
-   - All service admin panels
+   - Traefik Dashboard, Portainer, WireGuard UI, PufferPanel, Grafana/Prometheus (**default: no public DNS**)
+   - All other service admin panels behind whitelist
 
 2. **Public only what's necessary**
    - Traefik (80/443) - Reverse Proxy
@@ -79,16 +84,6 @@ This overview shows all services, their access methods, and security risk assess
    - Organizr (8003)
    - Jellyfin/Plex Discovery Ports
    - Pi-hole DNS (53)
-
-### ⚠️ Current Issues
-
-1. **PufferPanel** - No admin-whitelist activated!
-   - **Status:** Publicly accessible (only `default@file`)
-   - **Risk:** Medium-High (Game Server Management)
-   - **Solution:** Add `admin-whitelist@file` middleware in `docker-compose.yml`:
-     ```yaml
-     - "traefik.http.routers.pufferpanel.middlewares=default@file,admin-whitelist@file"
-     ```
 
 ### 🔒 Best Practices
 

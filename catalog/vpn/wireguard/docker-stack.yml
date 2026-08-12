@@ -54,17 +54,19 @@ services:
     volumes:
       - wireguard-ui-db:/app/db
       - wireguard-config-ui:/etc/wireguard
+    # SECURITY: VPN peer UI — Traefik/DNS OFF by default (UDP 51820 stays public).
     labels:
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      - "traefik.http.routers.wireguard-ui.entrypoints=websecure"
-      - "traefik.http.routers.wireguard-ui.rule=Host(`wireguard-ui.${DOMAIN}`)"
-      - "traefik.http.routers.wireguard-ui.tls=true"
-      - "traefik.http.routers.wireguard-ui.tls.certresolver=http_resolver"
-      - "traefik.http.services.wireguard-ui.loadbalancer.server.port=5000"
-      - "traefik.http.routers.wireguard-ui.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
-      - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.secure=true"
+      # VPN/LAN only — uncomment together with traefik.enable=true:
+      # - "traefik.http.routers.wireguard-ui.entrypoints=websecure"
+      # - "traefik.http.routers.wireguard-ui.rule=Host(`wireguard-ui.${DOMAIN}`)"
+      # - "traefik.http.routers.wireguard-ui.tls=true"
+      # - "traefik.http.routers.wireguard-ui.tls.certresolver=http_resolver"
+      # - "traefik.http.services.wireguard-ui.loadbalancer.server.port=5000"
+      # - "traefik.http.routers.wireguard-ui.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
+      # - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.secure=true"
     deploy:
       mode: global
       placement:

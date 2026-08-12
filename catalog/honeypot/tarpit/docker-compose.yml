@@ -35,22 +35,22 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus:/prometheus
+    # ------------------------------------------------------------------
+    # SECURITY: Metrics UI = high risk. Default: NOT exposed via Traefik/DNS.
+    # Prefer VPN/LAN or localhost. Endlessh metrics stay on 127.0.0.1:2112.
+    #
+    # To enable VPN/LAN-only reverse proxy (Auth + whitelist):
+    #   set traefik.enable=true and uncomment labels below.
+    # ------------------------------------------------------------------
     labels:
-      # Basis-Konfiguration
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      
-      # Router Konfiguration
-      - "traefik.http.routers.prometheus.entrypoints=websecure"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
-      - "traefik.http.routers.prometheus.tls=true"
-      - "traefik.http.routers.prometheus.tls.certresolver=http_resolver"
-      
-      # Service Konfiguration
-      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-      
-      # Maximale Sicherheit
-      - "traefik.http.routers.prometheus.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
+      # - "traefik.http.routers.prometheus.entrypoints=websecure"
+      # - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
+      # - "traefik.http.routers.prometheus.tls=true"
+      # - "traefik.http.routers.prometheus.tls.certresolver=http_resolver"
+      # - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      # - "traefik.http.routers.prometheus.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
 
   grafana:
     image: grafana/grafana:latest
@@ -66,26 +66,21 @@ services:
     volumes:
       - grafana_var:/var/lib/grafana/
       - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/prometheus.yml
+    # ------------------------------------------------------------------
+    # SECURITY: Admin dashboards. Default: NOT exposed via Traefik/DNS.
+    # Prefer VPN/LAN. Optional: enable=true + Auth + admin-whitelist.
+    # ------------------------------------------------------------------
     labels:
-      # Basis-Konfiguration
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      
-      # Router Konfiguration
-      - "traefik.http.routers.grafana.entrypoints=websecure"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
-      - "traefik.http.routers.grafana.tls=true"
-      - "traefik.http.routers.grafana.tls.certresolver=http_resolver"
-      
-      # Service Konfiguration
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      
-      # Maximale Sicherheit
-      - "traefik.http.routers.grafana.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
-      
-      # Sticky Sessions für Grafana
-      - "traefik.http.services.grafana.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.grafana.loadbalancer.sticky.cookie.secure=true"
+      # - "traefik.http.routers.grafana.entrypoints=websecure"
+      # - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
+      # - "traefik.http.routers.grafana.tls=true"
+      # - "traefik.http.routers.grafana.tls.certresolver=http_resolver"
+      # - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      # - "traefik.http.routers.grafana.middlewares=default@file,traefikAuth@file,admin-whitelist@file,rate-limit@docker"
+      # - "traefik.http.services.grafana.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.grafana.loadbalancer.sticky.cookie.secure=true"
 
 networks:
   proxy:

@@ -24,19 +24,28 @@ Diese Übersicht zeigt alle Services, ihre Zugriffsmethoden und Sicherheitsrisik
 | **WireGuard VPN** | 51820/UDP | ✅ NIEDRIG | WireGuard Verschlüsselung | ✅ Öffentlich (für VPN nötig) |
 | **PufferPanel Game Ports** | 27015+ | ⚠️ MITTEL | Game Server Security | ⚠️ Nur wenn nötig |
 
+### Admin-UIs — Traefik/DNS standardmäßig AUS (VPN/LAN bevorzugt)
+
+| Service | DNS | Risiko | Schutz | Status |
+|---------|-----|--------|--------|--------|
+| **Traefik Dashboard** | `traefik.domain` | ⚠️ **HOCH** | Router auskommentiert; API auf `127.0.0.1:8080` | ✅ Default unexponiert |
+| **Portainer** | `portainer.domain` | ⚠️ **HOCH** | `traefik.enable=false` | ✅ Default unexponiert |
+| **WireGuard UI** | `wireguard-ui.domain` | ⚠️ **HOCH** | `traefik.enable=false` (UDP 51820 bleibt öffentlich) | ✅ Default unexponiert |
+| **PufferPanel** | `pufferpanel.domain` | ⚠️ **HOCH** | `traefik.enable=false` (Game-Ports bleiben publiziert) | ✅ Default unexponiert |
+| **Grafana / Prometheus** | `grafana` / `prometheus.domain` | ⚠️ **HOCH** | `traefik.enable=false` | ✅ Default unexponiert |
+
+Optional: `enable=true` (bzw. Traefik-Dashboard-Router einkommentieren) **nur** mit Auth + `admin-whitelist`.
+
 ### DNS-Freigabe mit admin-whitelist (NUR VPN/LAN)
 
 | Service | DNS | Risiko | Schutz | Status |
 |---------|-----|--------|--------|--------|
-| **Traefik Dashboard** | `traefik.domain` | ⚠️ **HOCH** | Basic Auth + Whitelist | ✅ Geschützt |
-| **Portainer** | `portainer.domain` | ⚠️ **HOCH** | Basic Auth + Whitelist | ✅ Geschützt |
 | **Pi-hole** | `pihole.domain` | ⚠️ MITTEL | Whitelist + Rate Limit | ✅ Geschützt |
 | **Jellyfin** | `jellyfin.domain` | ⚠️ MITTEL | Whitelist | ✅ Geschützt |
 | **Plex** | `plex.domain` | ⚠️ MITTEL | Whitelist | ✅ Geschützt |
 | **Organizr** | `organizr.domain` | ⚠️ MITTEL | Whitelist + Rate Limit | ✅ Geschützt |
 | **Yourls** | `link.domain` | ⚠️ NIEDRIG | Basic Auth + Whitelist | ✅ Geschützt |
 | **OwnCloud** | `owncloud.domain` | ⚠️ MITTEL | Whitelist + Rate Limit | ✅ Geschützt |
-| **WireGuard UI** | `wireguard.domain` | ⚠️ **HOCH** | Basic Auth + Whitelist | ✅ Geschützt |
 | **Bitwarden Admin** | `bw.domain/admin` | ⚠️ **HOCH** | Basic Auth + Whitelist | ✅ Geschützt |
 
 ### DNS-Freigabe OHNE admin-whitelist (⚠️ ÖFFENTLICH!)
@@ -44,11 +53,8 @@ Diese Übersicht zeigt alle Services, ihre Zugriffsmethoden und Sicherheitsrisik
 | Service | DNS | Risiko | Schutz | Status |
 |---------|-----|--------|--------|--------|
 | **Bitwarden Sync** | `bw.domain` | ✅ **NIEDRIG** | Nur `default@file` | ✅ Öffentlich (für Sync nötig) |
-| **PufferPanel** | `pufferpanel.domain` | ⚠️ **MITTEL-HOCH** | Nur `default@file` | ⚠️ **ÖFFENTLICH - NICHT empfohlen!** |
 
-> **⚠️ WICHTIG:** 
-> - Bitwarden Sync ist bewusst öffentlich (für Mobile/Desktop Sync nötig)
-> - PufferPanel sollte `admin-whitelist@file` Middleware hinzufügen!
+> **⚠️ WICHTIG:** Bitwarden Sync ist bewusst öffentlich (für Mobile/Desktop Sync nötig).
 
 ### Nur lokal (127.0.0.1 oder lokale Ports)
 
@@ -66,9 +72,8 @@ Diese Übersicht zeigt alle Services, ihre Zugriffsmethoden und Sicherheitsrisik
 ### ✅ Empfohlene Konfiguration
 
 1. **Admin-Interfaces NUR über VPN/LAN**
-   - Traefik Dashboard
-   - Portainer
-   - Alle Service-Admin-Panels
+   - Traefik Dashboard, Portainer, WireGuard UI, PufferPanel, Grafana/Prometheus (**Default: kein öffentliches DNS**)
+   - Übrige Admin-Panels hinter Whitelist
 
 2. **Öffentlich nur was nötig ist**
    - Traefik (80/443) - Reverse Proxy
@@ -79,16 +84,6 @@ Diese Übersicht zeigt alle Services, ihre Zugriffsmethoden und Sicherheitsrisik
    - Organizr (8003)
    - Jellyfin/Plex Discovery Ports
    - Pi-hole DNS (53)
-
-### ⚠️ Aktuelle Probleme
-
-1. **PufferPanel** - Keine admin-whitelist aktiviert!
-   - **Status:** Öffentlich erreichbar (nur `default@file`)
-   - **Risiko:** Mittel-Hoch (Game Server Management)
-   - **Lösung:** `admin-whitelist@file` Middleware in `docker-compose.yml` hinzufügen:
-     ```yaml
-     - "traefik.http.routers.pufferpanel.middlewares=default@file,admin-whitelist@file"
-     ```
 
 ### 🔒 Best Practices
 

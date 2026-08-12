@@ -20,7 +20,7 @@ services:
     networks:
       proxy:
     labels:
-      traefik.enable: "false" 
+      traefik.enable: "false"
 
   wireguard-ui:
     image: ngoduykhanh/wireguard-ui:latest
@@ -38,26 +38,24 @@ services:
     volumes:
       - ./db:/app/db
       - ./config:/etc/wireguard
+    # ------------------------------------------------------------------
+    # SECURITY: VPN peer management = high risk. Default: NOT via Traefik/DNS.
+    # Prefer WireGuard VPN → LAN IP or SSH tunnel. UDP 51820 stays public.
+    #
+    # To enable VPN/LAN-only reverse proxy (still requires Auth + whitelist):
+    #   set traefik.enable=true and uncomment labels below.
+    # ------------------------------------------------------------------
     labels:
-      # Basis-Konfiguration
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      
-      # Router Konfiguration
-      - "traefik.http.routers.wireguard-ui.entrypoints=websecure"
-      - "traefik.http.routers.wireguard-ui.rule=Host(`wireguard-ui.${DOMAIN}`)"
-      - "traefik.http.routers.wireguard-ui.tls=true"
-      - "traefik.http.routers.wireguard-ui.tls.certresolver=http_resolver"
-      
-      # Service Konfiguration
-      - "traefik.http.services.wireguard-ui.loadbalancer.server.port=5000"
-      
-      # Maximale Sicherheit mit allen Middlewares
-      - "traefik.http.routers.wireguard-ui.middlewares=default@file,traefikAuth@file,admin-whitelist@file" #,rate-limit@docker"
-      
-      # Sticky Sessions
-      - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.secure=true"
+      # - "traefik.http.routers.wireguard-ui.entrypoints=websecure"
+      # - "traefik.http.routers.wireguard-ui.rule=Host(`wireguard-ui.${DOMAIN}`)"
+      # - "traefik.http.routers.wireguard-ui.tls=true"
+      # - "traefik.http.routers.wireguard-ui.tls.certresolver=http_resolver"
+      # - "traefik.http.services.wireguard-ui.loadbalancer.server.port=5000"
+      # - "traefik.http.routers.wireguard-ui.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
+      # - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.wireguard-ui.loadbalancer.sticky.cookie.secure=true"
 
 
 networks:

@@ -113,22 +113,23 @@ services:
       - traefik-config:/traefik.yml:ro
       - traefik-acme:/traefik
       - traefik-dynamic:/dynamic-conf:ro
-    # Labels bleiben gleich wie in docker-compose.yml
+    # SECURITY: Dashboard routers OFF by default; keep enable=true for rate-limit@docker.
     labels:
       - "traefik.docker.network=proxy"
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
-      - "traefik.http.routers.traefik.priority=1"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.tls.certresolver=http_resolver"
-      - "traefik.http.services.traefik.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.traefik.loadbalancer.sticky.cookie.secure=true"
-      - "traefik.http.routers.pingweb.rule=PathPrefix(`/ping`)"
-      - "traefik.http.routers.pingweb.service=ping@internal"
-      - "traefik.http.routers.pingweb.entrypoints=websecure"
+      # Dashboard (OFF — uncomment for VPN/LAN + Auth + whitelist):
+      # - "traefik.http.routers.traefik.entrypoints=websecure"
+      # - "traefik.http.routers.traefik.middlewares=default@file,traefikAuth@file,admin-whitelist@file"
+      # - "traefik.http.routers.traefik.priority=1"
+      # - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
+      # - "traefik.http.routers.traefik.service=api@internal"
+      # - "traefik.http.routers.traefik.tls=true"
+      # - "traefik.http.routers.traefik.tls.certresolver=http_resolver"
+      # - "traefik.http.services.traefik.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.traefik.loadbalancer.sticky.cookie.secure=true"
+      # - "traefik.http.routers.pingweb.rule=PathPrefix(`/ping`)"
+      # - "traefik.http.routers.pingweb.service=ping@internal"
+      # - "traefik.http.routers.pingweb.entrypoints=websecure"
       - "traefik.http.middlewares.security-headers.headers.sslRedirect=true"
       - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
       - "traefik.http.middlewares.security-headers.headers.forceSTSHeader=true"

@@ -18,34 +18,30 @@ services:
       #- '25565:25565' # Default Minecraft Java port
       - '27065-27075:27065-27075' # Beispiel: Ports 27065 bis 27075
 
+    # ------------------------------------------------------------------
+    # SECURITY: Game-server admin UI. Default: NOT exposed via Traefik/DNS.
+    # Prefer WireGuard VPN → LAN IP or SSH tunnel. Game ports stay published.
+    #
+    # To enable VPN/LAN-only reverse proxy (requires admin-whitelist):
+    #   set traefik.enable=true and uncomment HTTP labels below.
+    # ------------------------------------------------------------------
     labels:
-      # Basis-Konfiguration
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      
-      # Router Konfiguration
-      - "traefik.http.routers.pufferpanel.entrypoints=websecure"
-      - "traefik.http.routers.pufferpanel.rule=Host(`pufferpanel.$DOMAIN`)"
-      - "traefik.http.routers.pufferpanel.tls=true"
-      - "traefik.http.routers.pufferpanel.tls.certresolver=http_resolver"
-      
-      # Service Konfiguration
-      - "traefik.http.services.pufferpanel.loadbalancer.server.port=8080"
-      
-      # Middleware Chain - ANGEPASST für PufferPanel
-      - "traefik.http.routers.pufferpanel.middlewares=default@file" #,admin-whitelist@file"
-      
-      # Sticky Sessions für PufferPanel
-      - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.secure=true"
-
-      - "traefik.tcp.routers.pufferpanel-daemon.entrypoints=games"
-      - "traefik.tcp.routers.pufferpanel-daemon.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.pufferpanel-daemon.service=pufferpanel-daemon"
-      - "traefik.tcp.services.pufferpanel-daemon.loadbalancer.server.port=5657"
+      # - "traefik.http.routers.pufferpanel.entrypoints=websecure"
+      # - "traefik.http.routers.pufferpanel.rule=Host(`pufferpanel.$DOMAIN`)"
+      # - "traefik.http.routers.pufferpanel.tls=true"
+      # - "traefik.http.routers.pufferpanel.tls.certresolver=http_resolver"
+      # - "traefik.http.services.pufferpanel.loadbalancer.server.port=8080"
+      # - "traefik.http.routers.pufferpanel.middlewares=default@file,admin-whitelist@file"
+      # - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.secure=true"
+      # Optional TCP via Traefik (host ports above are enough for most setups):
+      # - "traefik.tcp.routers.pufferpanel-daemon.entrypoints=games"
+      # - "traefik.tcp.routers.pufferpanel-daemon.rule=HostSNI(`*`)"
+      # - "traefik.tcp.routers.pufferpanel-daemon.service=pufferpanel-daemon"
+      # - "traefik.tcp.services.pufferpanel-daemon.loadbalancer.server.port=5657"
     restart: unless-stopped
-
-
 
 networks:
   proxy:
@@ -54,4 +50,3 @@ networks:
 volumes:
   db_data:
   data:
-

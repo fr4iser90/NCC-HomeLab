@@ -1,5 +1,7 @@
 # Docker Swarm Stack für PufferPanel
 # Deploy mit: docker stack deploy -c docker-stack.yml games
+#
+# SECURITY: Admin UI Traefik/DNS OFF by default. Game ports stay published.
 
 version: '3.8'
 
@@ -29,20 +31,17 @@ services:
         protocol: tcp
         mode: host
     labels:
-      - "traefik.enable=true"
+      - "traefik.enable=false"
       - "traefik.docker.network=proxy"
-      - "traefik.http.routers.pufferpanel.entrypoints=websecure"
-      - "traefik.http.routers.pufferpanel.rule=Host(`pufferpanel.$DOMAIN`)"
-      - "traefik.http.routers.pufferpanel.tls=true"
-      - "traefik.http.routers.pufferpanel.tls.certresolver=http_resolver"
-      - "traefik.http.services.pufferpanel.loadbalancer.server.port=8080"
-      - "traefik.http.routers.pufferpanel.middlewares=default@file"
-      - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.httpOnly=true"
-      - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.secure=true"
-      - "traefik.tcp.routers.pufferpanel-daemon.entrypoints=games"
-      - "traefik.tcp.routers.pufferpanel-daemon.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.pufferpanel-daemon.service=pufferpanel-daemon"
-      - "traefik.tcp.services.pufferpanel-daemon.loadbalancer.server.port=5657"
+      # VPN/LAN only — uncomment together with traefik.enable=true:
+      # - "traefik.http.routers.pufferpanel.entrypoints=websecure"
+      # - "traefik.http.routers.pufferpanel.rule=Host(`pufferpanel.$DOMAIN`)"
+      # - "traefik.http.routers.pufferpanel.tls=true"
+      # - "traefik.http.routers.pufferpanel.tls.certresolver=http_resolver"
+      # - "traefik.http.services.pufferpanel.loadbalancer.server.port=8080"
+      # - "traefik.http.routers.pufferpanel.middlewares=default@file,admin-whitelist@file"
+      # - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.httpOnly=true"
+      # - "traefik.http.services.pufferpanel.loadbalancer.sticky.cookie.secure=true"
     deploy:
       mode: replicated
       replicas: 1
@@ -60,4 +59,3 @@ volumes:
     driver: local
   pufferpanel-config:
     driver: local
-
