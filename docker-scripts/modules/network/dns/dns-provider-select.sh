@@ -6,7 +6,7 @@ if [ -n "${_DNS_PROVIDER_SELECT_LOADED+x}" ]; then
 fi
 _DNS_PROVIDER_SELECT_LOADED=1
 
-ddns_env_file="${DOCKER_BASE_DIR}/gateway-management/ddns-updater/ddns-updater.env"
+ddns_env_file="${DOCKER_BASE_DIR}/gateway/ddns-updater/ddns-updater.env"
 
 select_dns_provider() {
     local tmp_file=$(mktemp)

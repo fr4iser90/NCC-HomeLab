@@ -9,14 +9,14 @@ Vaultwarden is an unofficial, compatible implementation of the Bitwarden server.
 - **Image:** `vaultwarden/server:latest`
 - **Port:** 80 (internal)
 - **Network:** `proxy`
-- **Configuration:** `docker/password-management/bitwarden/`
+- **Configuration:** `catalog/password/bitwarden/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/password-management/bitwarden
+cd catalog/password/bitwarden
 docker-compose up -d
 ```
 

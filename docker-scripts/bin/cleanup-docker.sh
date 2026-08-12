@@ -13,7 +13,7 @@ safe_docker_cleanup() {
 
     # 1. Compose-Projekte sauber herunterfahren
     print_status "Stopping Docker Compose projects..." "info"
-    for category in "${MANAGEMENT_CATEGORIES[@]}"; do
+    for category in "${!MANAGEMENT_CATEGORIES[@]}"; do
         if [ -d "${DOCKER_BASE_DIR}/$category" ]; then
             print_status "Stopping services in $category..." "info"
             (cd "${DOCKER_BASE_DIR}/$category" && docker compose down) 2>/dev/null || true

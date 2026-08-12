@@ -1,0 +1,13 @@
+# Compute / LLM for aarch64 (Jetson Orin, other ARM).
+# Default path: Ollama + OpenWebUI. opencode optional.
+# llama-cpp is an alternative inference backend — enable instead of ollama, not both.
+name: compute-llm-arm
+family: compute
+init: init-compute
+requiresGateway: false
+arch: aarch64
+services:
+  - compute/ollama
+  - compute/open-webui
+  # - compute/opencode
+  # - compute/llama-cpp

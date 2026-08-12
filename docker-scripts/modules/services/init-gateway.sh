@@ -137,46 +137,18 @@ initialize_gateway() {
         init_credentials_file
     fi
 
-    local TRAEFIK_DIR=$(get_docker_dir "traefik-crowdsec")
-    local DDNS_DIR=$(get_docker_dir "ddns-updater")
-    
-    # DNS Setup MUSS ZUERST kommen!
+    # DNS first, then Traefik auth/SSL; per-service hooks run inside start_docker_container
     print_status "Setting up DNS configuration..." "info"
     if ! update_dns_configuration; then
         print_status "Failed to configure DNS" "error"
         return 1
     fi
 
-    # Update environment files für alle Gateway-Services
-    for script in "update-crowdsec-env.sh" "update-traefik-env.sh" "update-ddns-env.sh" "update-ddns-config.sh"; do
-        local script_dir
-        case $script in
-            update-ddns*)
-                script_dir="$DDNS_DIR"
-                ;;
-            *)
-                script_dir="$TRAEFIK_DIR"
-                ;;
-        esac
-
-        local script_path="$script_dir/$script"
-        if [ -f "$script_path" ]; then
-            print_status "Running $script..." "info"
-            bash "$script_path" || {
-                print_status "Failed to run $script" "error"
-                return 1
-            }
-        else
-            print_status "Script not found: $script_path" "error"
-            return 1
-        fi
-    done
-    
     # Configure components
     configure_traefik_auth || return 1
     configure_traefik_ssl || return 1
 
-    # Start services
+    # Start services (contract.env runtime-ids + hooks/pre-start.sh)
     print_status "Starting Gateway Services..." "info"
     start_docker_container "traefik-crowdsec" || return 1
     start_docker_container "ddns-updater" || return 1

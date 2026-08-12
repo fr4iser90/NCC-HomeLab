@@ -8,14 +8,14 @@ Watchtower automatically updates Docker containers to the latest images.
 
 - **Image:** `containrrr/watchtower:latest`
 - **Network:** No special network needed
-- **Configuration:** `docker/system-management/watchtower/`
+- **Configuration:** `catalog/system/watchtower/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/system-management/watchtower
+cd catalog/system/watchtower
 docker-compose up -d
 ```
 

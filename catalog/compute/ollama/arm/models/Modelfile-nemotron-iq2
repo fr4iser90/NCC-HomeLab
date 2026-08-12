@@ -1,0 +1,7 @@
+FROM /models/NVIDIA-Nemotron-3-Nano-4B-UD-IQ2_XXS.gguf
+
+PARAMETER temperature 0.7
+PARAMETER n_ctx_train 1048576
+PARAMETER num_ctx 32768
+
+

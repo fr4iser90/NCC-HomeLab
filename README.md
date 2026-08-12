@@ -39,7 +39,43 @@ cd homelab-setup
 
 2. Run the setup script:
 ```bash
+# Interactive: core | core+media | custom fzf
 bash ./docker-scripts/bin/init-homelab.sh
+
+# Or explicit profiles (core = base; media is additive)
+bash ./docker-scripts/bin/init-homelab.sh --profile homelab-core
+bash ./docker-scripts/bin/init-homelab.sh --profile homelab-core --profile homelab-media
+```
+
+`init-homelab` is the **homelab family installer**. Profiles pick services:
+- **homelab-core** — gateway, companion, portainer, watchtower (run this as the base)
+- **homelab-media** — jellyfin, plex, owncast (needs gateway from core)
+
+Compute / LLM (no gateway):
+```bash
+bash ./docker-scripts/bin/init-compute.sh --profile compute-llm-arm   # aarch64 → catalog/.../arm/
+bash ./docker-scripts/bin/init-compute.sh --profile compute-llm-x86   # x86 → cpu/ (or COMPUTE_GPU=rocm)
+```
+
+Day-2 ops:
+```bash
+# status / stop / restart / start (profile and/or group/service)
+bash ./docker-scripts/bin/stacks.sh status --profile homelab-core
+bash ./docker-scripts/bin/stacks.sh restart media/jellyfin
+
+# Swarm (homelab only — not compute)
+bash ./docker-scripts/bin/swarm.sh init --advertise-addr 192.168.1.10
+bash ./docker-scripts/bin/swarm.sh join-token worker
+bash ./docker-scripts/bin/swarm.sh deploy --profile homelab-core
+bash ./docker-scripts/bin/swarm.sh status
+```
+
+Per-service UID/data handling lives in `catalog/<group>/<service>/contract.env`. Arch variants live under `arm/`, `cpu/`, `rocm/`.
+Service-specific secrets/tokens use optional `hooks/pre-start.sh` (not generic PUID writes).
+
+3. Run tests (no full deploy required):
+```bash
+bash ./tests/run.sh
 ```
 
 ## Available Services
@@ -95,16 +131,21 @@ The system supports multiple DNS providers for domain management and DDNS update
 
 ## Directory Structure
 
-docker/
-├── adblocker-management/
-├── companion-management/
-├── gateway-management/
-├── honeypot-management/
-├── media-management/
-├── password-management/
-├── storage-management/
-├── system-management/
-└── url-management/
+catalog/
+├── adblocker/
+├── companion/
+├── compute/
+├── dashboard/
+├── games/
+├── gateway/
+├── honeypot/
+├── media/
+├── password/
+├── storage/
+├── system/
+├── url/
+└── vpn/
+profiles/
 docker-scripts/
 ├── bin/
 ├── lib/

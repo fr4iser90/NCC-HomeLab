@@ -9,14 +9,14 @@ Organizr ist ein HTPC/Homelab Services Organizer mit einem schönen Dashboard.
 - **Image:** `organizr/organizr:latest`
 - **Ports:** 80 (intern), 8003 (lokal)
 - **Netzwerk:** `proxy`
-- **Konfiguration:** `docker/dashboard-management/organizr/`
+- **Konfiguration:** `catalog/dashboard/organizr/`
 
 ## Docker-Konfiguration
 
 ### Docker Compose
 
 ```bash
-cd docker/dashboard-management/organizr
+cd catalog/dashboard/organizr
 docker-compose up -d
 ```
 

@@ -9,14 +9,14 @@ Tarpit is a security honeypot that detects attacks and slows down attackers.
 - **Image:** `tarampampam/tarpit:latest`
 - **Ports:** 22 (SSH Honeypot), 80 (HTTP Honeypot)
 - **Network:** `proxy` (optional)
-- **Configuration:** `docker/honeypot-management/tarpit/`
+- **Configuration:** `catalog/honeypot/tarpit/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/honeypot-management/tarpit
+cd catalog/honeypot/tarpit
 docker-compose up -d
 ```
 

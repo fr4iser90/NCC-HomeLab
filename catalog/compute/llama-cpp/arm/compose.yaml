@@ -1,0 +1,28 @@
+# llama.cpp server — ARM / aarch64 CUDA build (alternative to Ollama, not both as default).
+# Ensure network: docker network create ai-net
+# Place GGUF under ./models (not committed).
+services:
+  llama-cpp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: llama-cpp
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./models:/models
+    networks:
+      - ai-net
+    devices:
+      - nvidia.com/gpu=all
+    environment:
+      # Set one model path (example — override via .env / compose override)
+      - MODEL=/models/model.gguf
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - GGML_CUDA=1
+
+networks:
+  ai-net:
+    external: true

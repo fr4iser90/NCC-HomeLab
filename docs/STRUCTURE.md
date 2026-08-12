@@ -149,11 +149,11 @@ Kurze Beschreibung des Services.
 
 ### Docker Compose
 
-Siehe: `docker/<kategorie>/<service>/docker-compose.yml`
+Siehe: `catalog/<kategorie>/<service>/docker-compose.yml`
 
 ### Docker Swarm Stack
 
-Siehe: `docker/<kategorie>/<service>/docker-stack.yml`
+Siehe: `catalog/<kategorie>/<service>/docker-stack.yml`
 
 ## Zugriff
 

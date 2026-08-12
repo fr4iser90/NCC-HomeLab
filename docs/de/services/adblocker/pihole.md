@@ -12,11 +12,11 @@ Pi-hole blockiert Werbung und Tracking auf DNS-Ebene für das gesamte Netzwerk.
 
 ### Docker Compose
 
-Siehe: `docker/adblocker-management/pihole/docker-compose.yml`
+Siehe: `catalog/adblocker/pihole/docker-compose.yml`
 
 ### Docker Swarm Stack
 
-Siehe: `docker/adblocker-management/pihole/docker-stack.yml`
+Siehe: `catalog/adblocker/pihole/docker-stack.yml`
 
 **Wichtig:** DNS Ports müssen `mode: host` verwenden (Routing Mesh funktioniert nicht für DNS)!
 

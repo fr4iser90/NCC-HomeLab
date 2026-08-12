@@ -46,6 +46,10 @@ setup_permissions() {
     # Set ownership (VIRT_USER sollte jetzt immer definiert sein)
     set_ownership "$DOCKER_BASE_DIR" "$VIRT_USER"
     set_ownership "$DOCKER_SCRIPTS_DIR" "$VIRT_USER"
+
+    # Runtime IDs for containers are applied per-service via contract.env
+    # (see lib/core/runtime-ids.sh) during start_docker_container.
     print_status "File permissions and ownership set successfully!" "success"
+    print_status "Per-service PUID/data dirs use catalog/*/contract.env at start time" "info"
     return 0
 }

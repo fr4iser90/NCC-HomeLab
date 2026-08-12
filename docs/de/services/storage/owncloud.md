@@ -9,14 +9,14 @@ OwnCloud ist eine Open-Source File Storage Lösung für deine Dateien.
 - **Image:** `owncloud/server:latest`
 - **Port:** 80 (intern)
 - **Netzwerk:** `proxy`
-- **Konfiguration:** `docker/storage-management/owncloud/`
+- **Konfiguration:** `catalog/storage/owncloud/`
 
 ## Docker-Konfiguration
 
 ### Docker Compose
 
 ```bash
-cd docker/storage-management/owncloud
+cd catalog/storage/owncloud
 docker-compose up -d
 ```
 

@@ -8,14 +8,14 @@ DDNS Updater automatically updates DNS records when your public IP address chang
 
 - **Image:** `qmcgaw/ddns-updater:latest`
 - **Network:** `proxy` (optional)
-- **Configuration:** `docker/gateway-management/ddns-updater/`
+- **Configuration:** `catalog/gateway/ddns-updater/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/gateway-management/ddns-updater
+cd catalog/gateway/ddns-updater
 docker-compose up -d
 ```
 
@@ -56,10 +56,10 @@ CLOUDFLARE_API_KEY=your-api-key
 
 ```bash
 # Update environment
-./update-ddns-env.sh
+./hooks/pre-start.sh
 
 # Update config
-./update-ddns-config.sh
+./hooks/pre-start.sh
 ```
 
 ## Access

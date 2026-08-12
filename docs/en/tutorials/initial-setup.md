@@ -41,7 +41,7 @@ If you don't want to use the script, see:
 
 ```bash
 docker ps
-docker-compose -f docker/gateway-management/traefik-crowdsec/docker-compose.yml ps
+docker-compose -f catalog/gateway/traefik-crowdsec/docker-compose.yml ps
 ```
 
 ### Router Configuration

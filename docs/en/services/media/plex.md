@@ -9,14 +9,14 @@ Plex is a media server for your movies, TV shows, and music with many client app
 - **Image:** `plexinc/pms-docker:latest`
 - **Ports:** 32400 (Web), 32469 (Discovery)
 - **Network:** `proxy`
-- **Configuration:** `docker/media-management/plex/`
+- **Configuration:** `catalog/media/plex/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/media-management/plex
+cd catalog/media/plex
 docker-compose up -d
 ```
 
@@ -64,7 +64,7 @@ Plex is made accessible via Traefik. Labels must be configured in `docker-compos
 
 For remote access, you need a claim token:
 ```bash
-./update-claim-token.sh
+./hooks/pre-start.sh
 ```
 
 Or manually:
@@ -108,7 +108,7 @@ cat plex.env | grep PLEX_CLAIM
 
 ```bash
 # Update claim token
-./update-claim-token.sh
+./hooks/pre-start.sh
 
 # Check port forwarding
 # Plex needs port 32400

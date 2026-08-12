@@ -170,7 +170,7 @@ deploy:
 **1. Preparation:**
 
 ```bash
-cd docker/gateway-management/traefik-crowdsec
+cd catalog/gateway/traefik-crowdsec
 
 # Check docker-stack.yml
 cat docker-stack.yml

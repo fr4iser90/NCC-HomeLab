@@ -9,14 +9,14 @@ Portainer provides a user-friendly web UI for managing Docker containers, images
 - **Image:** `portainer/portainer-ce:latest`
 - **Port:** 9000 (internal)
 - **Network:** `proxy`
-- **Configuration:** `docker/system-management/portainer/`
+- **Configuration:** `catalog/system/portainer/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/system-management/portainer
+cd catalog/system/portainer
 docker-compose up -d
 ```
 

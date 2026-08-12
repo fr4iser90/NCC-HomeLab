@@ -10,14 +10,14 @@ Yourls (Your Own URL Shortener) ist ein Self-Hosted URL Shortener für deine eig
 - **Port:** 80 (intern)
 - **Netzwerk:** `proxy`
 - **Datenbank:** MySQL
-- **Konfiguration:** `docker/url-management/yourls/`
+- **Konfiguration:** `catalog/url/yourls/`
 
 ## Docker-Konfiguration
 
 ### Docker Compose
 
 ```bash
-cd docker/url-management/yourls
+cd catalog/url/yourls
 docker-compose up -d
 ```
 

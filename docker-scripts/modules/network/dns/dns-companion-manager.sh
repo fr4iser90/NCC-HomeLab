@@ -14,12 +14,12 @@ update_companion_config() {
 
             local COMPANION_DIR=$(get_docker_dir "$comp_name")
 
-            if [ ! -f "$COMPANION_DIR/update-env.sh" ]; then
-                print_status "Update script not found at: $COMPANION_DIR/update-env.sh" "error"
+            if [ ! -f "$COMPANION_DIR/hooks/pre-start.sh" ]; then
+                print_status "pre-start hook not found at: $COMPANION_DIR/hooks/pre-start.sh" "error"
                 return 1
             fi
 
-            if ! bash "$COMPANION_DIR/update-env.sh"; then
+            if ! bash "$COMPANION_DIR/hooks/pre-start.sh"; then
                 print_status "Failed to update $comp_name companion" "error"
                 return 1
             fi

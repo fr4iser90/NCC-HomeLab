@@ -6,19 +6,21 @@ if [ -n "${_CONTAINERS_LOADED+x}" ]; then
 fi
 _CONTAINERS_LOADED=1
 
-# Container Kategorien
+# Catalog groups → services (paths under catalog/<group>/<service>)
 declare -gA MANAGEMENT_CATEGORIES=(
-    ["url-management"]="yourls"
-    ["honeypot-management"]="tarpit"
-    ["media-management"]="plex jellyfin"
-    ["dashboard-management"]="organizr"
-    ["adblocker-management"]="pihole"
-    ["storage-management"]="owncloud"
-    ["gateway-management"]="traefik-crowdsec ddns-updater"  # Ohne companions
-    ["companion-management"]="cloudflare"        
-    ["password-management"]="bitwarden"
-    ["vpn-management"]="wireguard"
-    ["system-management"]="portainer watchtower"
+    ["url"]="yourls"
+    ["honeypot"]="tarpit"
+    ["media"]="plex jellyfin owncast"
+    ["dashboard"]="organizr"
+    ["adblocker"]="pihole"
+    ["storage"]="owncloud"
+    ["gateway"]="traefik-crowdsec ddns-updater"
+    ["companion"]="cloudflare"
+    ["password"]="bitwarden"
+    ["vpn"]="wireguard"
+    ["system"]="portainer watchtower"
+    ["games"]="pufferpanel"
+    ["compute"]="ollama llama-cpp opencode comfyui open-webui"
 )
 
 # Get container category

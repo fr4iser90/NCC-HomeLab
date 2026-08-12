@@ -1,0 +1,11 @@
+# Homelab media stacks — additive; expects proxy/gateway from homelab-core
+# Use: init-homelab.sh --profile homelab-core --profile homelab-media
+name: homelab-media
+family: homelab
+init: init-homelab
+requiresGateway: true
+arch: any
+services:
+  - media/jellyfin
+  - media/plex
+  - media/owncast

@@ -55,7 +55,7 @@ Most services use `.env` files:
 
 ```bash
 # Example: Traefik
-cd docker/gateway-management/traefik-crowdsec
+cd catalog/gateway/traefik-crowdsec
 cat traefik.env
 ```
 
@@ -64,7 +64,7 @@ cat traefik.env
 Many services have update scripts:
 
 ```bash
-./update-traefik-env.sh
+./hooks/pre-start.sh
 ```
 
 ## Troubleshooting

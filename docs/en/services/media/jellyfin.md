@@ -9,14 +9,14 @@ Jellyfin is an open-source media server for your movies, TV shows, and music.
 - **Image:** `lscr.io/linuxserver/jellyfin:latest`
 - **Ports:** 8096 (HTTP), 8920 (HTTPS), 7359/UDP (Discovery), 1900/UDP (DLNA)
 - **Network:** `proxy`
-- **Configuration:** `docker/media-management/jellyfin/`
+- **Configuration:** `catalog/media/jellyfin/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/media-management/jellyfin
+cd catalog/media/jellyfin
 docker-compose up -d
 ```
 

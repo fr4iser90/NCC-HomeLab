@@ -8,14 +8,14 @@ CrowdSec is an open-source security engine that detects and blocks threats. It a
 
 - **Image:** `crowdsecurity/crowdsec:latest`
 - **Network:** `crowdsec`
-- **Configuration:** `docker/gateway-management/traefik-crowdsec/`
+- **Configuration:** `catalog/gateway/traefik-crowdsec/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/gateway-management/traefik-crowdsec
+cd catalog/gateway/traefik-crowdsec
 docker-compose up -d crowdsec
 ```
 

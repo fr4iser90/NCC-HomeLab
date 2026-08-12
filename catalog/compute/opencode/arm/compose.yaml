@@ -1,0 +1,21 @@
+services:
+  opencode:
+    container_name: opencode-ai
+    build: .
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    command: bash
+
+    volumes:
+      - ./container-data:/home/ubuntu/.local
+      - ./projects:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./user-data:/home/ubuntu/.config/opencode
+
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    external: true

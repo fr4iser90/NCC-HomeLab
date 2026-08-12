@@ -1,0 +1,30 @@
+# ComfyUI — x86_64 (NVIDIA CDI / toolkit).
+# ARM/Jetson: use arm/ (local CUDA build). Override: COMPUTE_VARIANT=arm
+#
+# Data under ./data (gitignored). Create dirs if missing:
+#   mkdir -p data/{models,input,output,custom_nodes,user}
+services:
+  comfyui:
+    image: yanwk/comfyui-boot:cu124-slim
+    container_name: comfyui
+    restart: unless-stopped
+    ports:
+      - "8188:8188"
+    volumes:
+      - ./data/models:/root/ComfyUI/models
+      - ./data/input:/root/ComfyUI/input
+      - ./data/output:/root/ComfyUI/output
+      - ./data/custom_nodes:/root/ComfyUI/custom_nodes
+      - ./data/user:/root/ComfyUI/user
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,graphics
+    # NixOS / CDI (same pattern as ollama arm). Classic nvidia-docker: swap for deploy.resources.
+    devices:
+      - nvidia.com/gpu=all
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    external: true

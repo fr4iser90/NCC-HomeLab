@@ -8,14 +8,14 @@ Cloudflare Companion automatically manages DNS entries in Cloudflare for Traefik
 
 - **Image:** `tiredofit/traefik-cloudflare-companion:latest`
 - **Network:** No special network
-- **Configuration:** `docker/companion-management/cloudflare/`
+- **Configuration:** `catalog/companion/cloudflare/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/companion-management/cloudflare
+cd catalog/companion/cloudflare
 docker-compose up -d
 ```
 

@@ -1,0 +1,24 @@
+services:
+  opencode:
+    build: .
+    image: opencode-ai:latest
+    container_name: opencode-ai
+
+    stdin_open: true
+    tty: true
+    privileged: true
+
+    working_dir: /workspace
+
+    volumes:
+#      - ./container-data/cache:/home/ubuntu/.cache
+      - ./container-data/config:/home/ubuntu/.config/opencode
+      - /home/fr4iser/Documents/Git:/workspace
+      - .:/workspace/opencode
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+    command: /bin/bash -lc "/home/ubuntu/.opencode/bin/opencode || sleep infinity"

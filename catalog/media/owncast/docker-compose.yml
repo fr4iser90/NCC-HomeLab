@@ -1,0 +1,35 @@
+services:
+  owncast:
+    image: owncast/owncast:latest
+    container_name: owncast
+    restart: unless-stopped
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    volumes:
+      - ./owncast/data:/app/data
+    networks:
+      proxy:
+    ports:
+      # RTMP ingest for OBS or other streaming clients.
+      - "1935:1935"
+    labels:
+      # Basis-Konfiguration
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+
+      # Router Konfiguration
+      - "traefik.http.routers.owncast.entrypoints=websecure"
+      - "traefik.http.routers.owncast.rule=Host(`owncast.${DOMAIN}`)"
+      - "traefik.http.routers.owncast.tls=true"
+      - "traefik.http.routers.owncast.tls.certresolver=http_resolver"
+
+      # Service Konfiguration
+      - "traefik.http.services.owncast.loadbalancer.server.port=8080"
+
+      # Middleware Chain
+      - "traefik.http.routers.owncast.middlewares=default@file"
+
+networks:
+  proxy:
+    external: true

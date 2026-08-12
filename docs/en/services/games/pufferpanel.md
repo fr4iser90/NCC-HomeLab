@@ -9,14 +9,14 @@ PufferPanel is a web-based game server management panel.
 - **Image:** `pufferpanel/pufferpanel:latest`
 - **Ports:** 8080 (Web), 5657 (Daemon), 27015+ (Game Ports)
 - **Network:** `proxy`
-- **Configuration:** `docker/games-management/pufferpanel/`
+- **Configuration:** `catalog/games/pufferpanel/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/games-management/pufferpanel
+cd catalog/games/pufferpanel
 docker-compose up -d
 ```
 

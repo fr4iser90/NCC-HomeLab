@@ -9,14 +9,14 @@ WireGuard is a modern, fast VPN server for secure remote access.
 - **Image:** `linuxserver/wireguard:latest`
 - **Ports:** 51820/UDP (VPN), 51821 (Web UI, optional)
 - **Network:** `proxy` (for Web UI)
-- **Configuration:** `docker/vpn-management/wireguard/`
+- **Configuration:** `catalog/vpn/wireguard/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/vpn-management/wireguard
+cd catalog/vpn/wireguard
 docker-compose up -d
 ```
 

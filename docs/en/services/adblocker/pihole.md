@@ -9,14 +9,14 @@ Pi-hole blocks ads and tracking at the DNS level for the entire network.
 - **Image:** `pihole/pihole:latest`
 - **Ports:** 53 (DNS TCP/UDP), 853 (DNS over TLS)
 - **Network:** `proxy`
-- **Configuration:** `docker/adblocker-management/pihole/`
+- **Configuration:** `catalog/adblocker/pihole/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/adblocker-management/pihole
+cd catalog/adblocker/pihole
 docker-compose up -d
 ```
 

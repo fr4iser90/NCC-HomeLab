@@ -1,0 +1,20 @@
+# Generated compose interpolation files (PUID/PGID)
+catalog/**/.env
+
+# Local service data (keep structure via contracts, not blobs)
+catalog/**/data/
+catalog/media/jellyfin/jellyfin/
+catalog/media/plex/plex/
+catalog/media/owncast/owncast/
+catalog/compute/comfyui/data/
+catalog/compute/**/models/**
+!catalog/compute/**/models/Modelfile*
+!catalog/compute/**/models/.gitkeep
+catalog/compute/opencode/**/container-data/
+catalog/compute/opencode/**/projects/
+catalog/compute/opencode/**/user-data/
+catalog/compute/opencode/**/node_modules/
+
+# Legacy jetson working copy (prefer catalog/compute/*/arm)
+jetson/**/models/*.gguf
+jetson/**/node_modules/

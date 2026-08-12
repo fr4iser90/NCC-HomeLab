@@ -1,0 +1,43 @@
+# Docker Swarm Stack für Owncast
+# Deploy: docker stack deploy -c docker-stack.yml media-owncast
+# (or category-service name from get_stack_name → media-owncast)
+
+version: '3.8'
+
+services:
+  owncast:
+    image: owncast/owncast:latest
+    volumes:
+      - owncast-data:/app/data
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - proxy
+    ports:
+      - target: 1935
+        published: 1935
+        protocol: tcp
+        mode: host
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.http.routers.owncast.entrypoints=websecure"
+      - "traefik.http.routers.owncast.rule=Host(`owncast.${DOMAIN}`)"
+      - "traefik.http.routers.owncast.tls=true"
+      - "traefik.http.routers.owncast.tls.certresolver=http_resolver"
+      - "traefik.http.services.owncast.loadbalancer.server.port=8080"
+      - "traefik.http.routers.owncast.middlewares=default@file"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  owncast-data:
+    driver: local

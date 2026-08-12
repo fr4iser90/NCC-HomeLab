@@ -1,0 +1,60 @@
+services:
+  llama:
+    build: .
+    container_name: llama-router
+    devices:
+      - /dev/dri
+    group_add:
+      - video
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
+    ipc: host
+    shm_size: "16gb"
+    environment:
+      VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/radeon_icd.x86_64.json
+    volumes:
+      - ./models:/models
+      - ./models.ini:/etc/llama-cpp/models.ini:ro
+    ports:
+      - "11535:8080"
+    command:
+      [
+        "/workspace/llama.cpp/build/bin/llama-server",
+        "--host", "0.0.0.0",
+        "--port", "8080",
+        "--models-preset", "/etc/llama-cpp/models.ini",
+        "--models-max", "1"
+      ]
+    restart: unless-stopped
+
+  llama-embeddings:
+    build: .
+    container_name: llama-embeddings
+    devices:
+      - /dev/dri
+    group_add:
+      - video
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
+    ipc: host
+    shm_size: "16gb"
+    environment:
+      VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/radeon_icd.x86_64.json
+    volumes:
+      - ./models:/models
+      - ./models-embeddings.ini:/etc/llama-cpp/models-embeddings.ini:ro
+    ports:
+      - "11536:8080"
+    command:
+      [
+        "/workspace/llama.cpp/build/bin/llama-server",
+        "--host", "0.0.0.0",
+        "--port", "8080",
+        "--models-preset", "/etc/llama-cpp/models-embeddings.ini",
+        "--models-max", "1"
+      ]
+    restart: unless-stopped

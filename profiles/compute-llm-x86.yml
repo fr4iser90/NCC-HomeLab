@@ -1,0 +1,12 @@
+# Compute / LLM for x86_64 (ROCm via COMPUTE_GPU=rocm, else cpu/).
+name: compute-llm-x86
+family: compute
+init: init-compute
+requiresGateway: false
+arch: x86_64
+services:
+  - compute/ollama
+  - compute/llama-cpp
+  - compute/opencode
+  # - compute/comfyui
+  # - compute/open-webui

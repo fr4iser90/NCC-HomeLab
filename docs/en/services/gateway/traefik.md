@@ -9,14 +9,14 @@ Traefik is the reverse proxy for the NCC-HomeLab setup. It handles SSL/TLS termi
 - **Image:** `traefik:v3.1.0`
 - **Ports:** 80 (HTTP), 443 (HTTPS), 8080 (Dashboard)
 - **Networks:** `proxy`, `crowdsec`
-- **Configuration:** `docker/gateway-management/traefik-crowdsec/`
+- **Configuration:** `catalog/gateway/traefik-crowdsec/`
 
 ## Docker Configuration
 
 ### Docker Compose
 
 ```bash
-cd docker/gateway-management/traefik-crowdsec
+cd catalog/gateway/traefik-crowdsec
 docker-compose up -d
 ```
 

@@ -1,0 +1,13 @@
+# Homelab core: gateway, DNS companion, system tooling
+# Applied by: init-homelab.sh (alone or together with homelab-media)
+name: homelab-core
+family: homelab
+init: init-homelab
+requiresGateway: true
+arch: any
+services:
+  - gateway/traefik-crowdsec
+  - gateway/ddns-updater
+  - companion/cloudflare
+  - system/portainer
+  - system/watchtower

@@ -12,11 +12,11 @@ Portainer bietet eine benutzerfreundliche Web-UI zur Verwaltung von Docker Conta
 
 ### Docker Compose
 
-Siehe: `docker/system-management/portainer/docker-compose.yml`
+Siehe: `catalog/system/portainer/docker-compose.yml`
 
 ### Docker Swarm Stack
 
-Siehe: `docker/system-management/portainer/docker-stack.yml`
+Siehe: `catalog/system/portainer/docker-stack.yml`
 
 **Wichtig:** Portainer sollte auf einem Manager Node laufen (für Swarm Management)!
 

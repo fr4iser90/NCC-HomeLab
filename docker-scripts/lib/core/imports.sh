@@ -23,6 +23,9 @@ CORE_MODULES=(
     "containers.sh"
     "path.sh"
     "docker-mode.sh"
+    "profiles.sh"
+    "runtime-ids.sh"
+    "hooks.sh"
 )
 
 for module in "${CORE_MODULES[@]}"; do

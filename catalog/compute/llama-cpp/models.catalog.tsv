@@ -1,0 +1,22 @@
+# Tab-separated catalog for model-dl.sh
+# local_filename	subdir	hf_repo	remote_filename
+# remote_filename may differ from local (e.g. MTP repo naming); leave empty = same as local
+# Lines starting with # are ignored. Empty hf_repo = manual download only.
+#
+Qwen3.6-35B-A3B-MTP-UD-Q5_K_XL.gguf	llm/large	unsloth/Qwen3.6-35B-A3B-MTP-GGUF	Qwen3.6-35B-A3B-UD-Q5_K_XL.gguf
+Qwen3.6-35B-A3B-MTP-UD-Q4_K_XL.gguf	llm/large	unsloth/Qwen3.6-35B-A3B-MTP-GGUF	Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf
+mmproj-F16.gguf	llm/large	unsloth/Qwen3.6-35B-A3B-GGUF
+Qwen3.6-35B-A3B-UD-Q5_K_M.gguf	llm/large	unsloth/Qwen3.6-35B-A3B-GGUF
+Qwen3.6-35B-A3B-UD-Q4_K_M.gguf	llm/large	unsloth/Qwen3.6-35B-A3B-GGUF
+Qwen3.6-35B-A3B-MXFP4_MOE.gguf	llm/large	unsloth/Qwen3.6-35B-A3B-GGUF
+Nemotron-3-Nano-30B-A3B-Q4_K_M.gguf	llm/large	unsloth/Nemotron-3-Nano-30B-A3B-GGUF
+Nemotron-3-Nano-4B-RotorQuant-Q4_K_M.gguf	llm/small	unsloth/Nemotron-3-Nano-4B-GGUF
+Nemotron-3-Nano-4B-TurboQuant-Q4_K_M.gguf	llm/small	unsloth/Nemotron-3-Nano-4B-GGUF
+NVIDIA-Nemotron-3-Nano-4B-UD-IQ2_XXS.gguf	llm/small	unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF
+NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf	llm/small	unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF
+GemCod-R-Sapphire-270M.gguf	llm/small
+bge-m3-Q4_K_M.gguf	embeddings	gpustack/bge-m3-GGUF
+nomic-embed-text-v1.5.Q4_K_M.gguf	embeddings	nomic-ai/nomic-embed-text-v1.5-GGUF
+# multimodal example (uncomment when needed):
+# medgemma-4b-it-Q4_K_M.gguf	multimodal/medgemma-4b-it	unsloth/medgemma-4b-it-GGUF
+# medgemma-4b-it-mmproj-f16.gguf	multimodal/medgemma-4b-it	unsloth/medgemma-4b-it-GGUF

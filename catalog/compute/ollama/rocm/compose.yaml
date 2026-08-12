@@ -1,0 +1,23 @@
+services:
+  ollama-rocm:
+    image: ollama/ollama:rocm
+    container_name: ollama-rocm
+    restart: unless-stopped
+    ports:
+      - "${OLLAMA_ROCM_PORT:-11435}:11434"
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+    ipc: host
+    security_opt:
+      - seccomp=unconfined
+    volumes:
+      - ollama:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: 24h
+      HSA_OVERRIDE_GFX_VERSION: ${HSA_OVERRIDE_GFX_VERSION:-11.0.0}
+
+volumes:
+  ollama:

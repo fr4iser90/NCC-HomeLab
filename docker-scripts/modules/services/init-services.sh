@@ -11,52 +11,111 @@ if [ -n "${_SERVICES_INIT_LOADED+x}" ]; then
 fi
 _SERVICES_INIT_LOADED=1
 
-# Service Initialization
+# Start a list of services (short name or group/service)
+start_services_list() {
+    local selection=$1
+    local category service
+
+    while IFS= read -r entry; do
+        [ -z "$entry" ] && continue
+
+        if [[ "$entry" == */* ]]; then
+            category="${entry%%/*}"
+            service="${entry#*/}"
+        elif [[ "$entry" == *:* ]]; then
+            category="${entry%%:*}"
+            service="${entry#*:}"
+            entry="${category}/${service}"
+        else
+            service="$entry"
+            category=$(get_container_category "$service") || {
+                print_status "Unknown service: $service" "error"
+                return 1
+            }
+            entry="${category}/${service}"
+        fi
+
+        # Skip gateway — handled by initialize_gateway
+        if [ "$category" = "gateway" ]; then
+            continue
+        fi
+
+        print_status "Initializing $service..." "info"
+        export SERVICE_NAME="$service"
+
+        start_docker_container "$entry" || start_docker_container "$service" || {
+            print_status "Failed to start $service" "error"
+            return 1
+        }
+
+        print_status "$service initialized successfully" "success"
+    done <<< "$selection"
+
+    return 0
+}
+
+# Profile-driven service init (non-gateway)
+initialize_services_from_profiles() {
+    print_header "Profile Services Setup"
+
+    local apps
+    apps=$(profile_app_services)
+    if [ -z "$apps" ]; then
+        print_status "No application services in selected profiles" "info"
+        return 0
+    fi
+
+    print_status "Services from profiles: $(echo "$apps" | tr '\n' ' ')" "info"
+    start_services_list "$apps" || return 1
+
+    if [ "${AUTO_SETUP:-0}" -eq 1 ]; then
+        finalize_credentials_file
+    fi
+
+    print_status "Profile services initialized" "success"
+    return 0
+}
+
+# Legacy FZF multi-select
 initialize_services() {
     print_header "Optional Services Setup"
 
-    # Prüfe ob FZF verfügbar ist
     if ! command -v fzf >/dev/null 2>&1; then
         print_status "FZF is not installed. Please install it first." "error"
         return 1
     fi
 
-    # Erstelle Service-Liste für FZF
     local services=()
-    local descriptions=()
     for category in "${!MANAGEMENT_CATEGORIES[@]}"; do
-        # Überspringe Gateway-Management, da bereits installiert
-        if [ "$category" != "gateway-management" ]; then
+        if [ "$category" != "gateway" ] && [ "$category" != "compute" ]; then
             for service in ${MANAGEMENT_CATEGORIES[$category]}; do
                 services+=("$category:$service")
-                # Hole Service-Beschreibung aus README wenn vorhanden
-                local readme="${DOCKER_BASE_DIR}/${category}/${service}/README.md"
-                if [ -f "$readme" ]; then
-                    descriptions+=("$(head -n 1 "$readme" | sed 's/^#\s*//')")
-                else
-                    descriptions+=("$service")
-                fi
             done
         fi
     done
 
-    # FZF Multi-Select mit Preview
     print_status "Select services to install (SPACE to select, ENTER to confirm):" "info"
 
-    # Erstelle temporäre Preview-Funktion
     preview_service() {
         local selection="$1"
         local category="${selection%%:*}"
         local service="${selection#*:}"
         local readme="${DOCKER_BASE_DIR}/${category}/${service}/README.md"
-        
+        local contract="${DOCKER_BASE_DIR}/${category}/${service}/contract.env"
+
         if [ -f "$readme" ]; then
             cat "$readme"
         else
-            echo "No description available for $service"
+            echo "Service: $service"
+        fi
+        if [ -f "$contract" ]; then
+            echo
+            echo "--- contract.env ---"
+            cat "$contract"
         fi
     }
     export -f preview_service
+    export DOCKER_BASE_DIR
 
     local selected
     selected=$(printf '%s\n' "${services[@]}" | fzf --multi \
@@ -76,27 +135,9 @@ initialize_services() {
         return 0
     fi
 
-    # Installiere ausgewählte Services
-    while IFS= read -r selection; do
-        local category="${selection%%:*}"
-        local service="${selection#*:}"
-        
-        print_status "Initializing $service..." "info"
-        
-        # Setze SERVICE_NAME für Auto-Credentials
-        export SERVICE_NAME="$service"
+    start_services_list "$selected" || return 1
 
-        # Starte Container
-        start_docker_container "$service" || {
-            print_status "Failed to start $service" "error"
-            return 1
-        }
-
-        print_status "$service initialized successfully" "success"
-    done <<< "$selected"
-
-    # Finalisiere Credentials wenn Auto-Setup aktiv war
-    if [ "$AUTO_SETUP" -eq 1 ]; then
+    if [ "${AUTO_SETUP:-0}" -eq 1 ]; then
         finalize_credentials_file
     fi
 
@@ -104,7 +145,6 @@ initialize_services() {
     return 0
 }
 
-# Run if script is executed directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     initialize_services
 fi

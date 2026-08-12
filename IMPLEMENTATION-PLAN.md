@@ -25,7 +25,7 @@
 
 ### 3. Stack-Namen
 **✅ Entscheidung:** `<category>-<service>`
-- Beispiel: `gateway-management-traefik-crowdsec`
+- Beispiel: `gateway-traefik-crowdsec`
 - Format: Kategorie + Bindestrich + Service-Name
 
 ### 4. Git-Ignore
@@ -36,7 +36,7 @@
 ### 5. Datei-Struktur
 **✅ Entscheidung: Separate Dateien**
 ```
-docker/
+catalog/
   service-name/
     docker-compose.yml          # Rootful (Standard)
     docker-compose.rootless.yml # Rootless-Variante
@@ -145,10 +145,10 @@ start_docker_container() {
 
     print_status "Starting $container" "info"
 
-    # Check for update-env.sh
-    if [ -f "$docker_dir/update-env.sh" ]; then
-        print_status "Running environment updates..." "info"
-        (cd "$docker_dir" && bash update-env.sh)
+    # Check for hooks/pre-start.sh (service-specific; PUID via contract.env)
+    if [ -f "$docker_dir/hooks/pre-start.sh" ]; then
+        print_status "Running pre-start hook..." "info"
+        bash "$docker_dir/hooks/pre-start.sh"
     fi
 
     # NEU: Docker-Modus erkennen und passende Datei wählen
@@ -356,8 +356,8 @@ echo $XDG_RUNTIME_DIR
 # In init-homelab.sh oder separatem Script
 if is_rootless; then
     # Für traefik-crowdsec
-    mkdir -p "$DOCKER_BASE_DIR/gateway-management/traefik-crowdsec/logs/traefik"
-    mkdir -p "$DOCKER_BASE_DIR/gateway-management/traefik-crowdsec/logs/auth"
+    mkdir -p "$DOCKER_BASE_DIR/gateway/traefik-crowdsec/logs/traefik"
+    mkdir -p "$DOCKER_BASE_DIR/gateway/traefik-crowdsec/logs/auth"
     # ... weitere Services
 fi
 ```
@@ -497,8 +497,8 @@ docker-scripts/
 ### 9.2 Service-Struktur (Beispiel)
 
 ```
-docker/
-└── gateway-management/
+catalog/
+└── gateway/
     └── traefik-crowdsec/
         ├── docker-compose.yml          # Rootful
         ├── docker-compose.rootless.yml # Rootless (NEU)
@@ -607,67 +607,67 @@ docker/
 
 ### ✅ docker-compose.yml (Rootful) - ALLE existieren
 Alle Services haben bereits `docker-compose.yml`:
-- ✅ adblocker-management/pihole
-- ✅ companion-management/cloudflare
-- ✅ dashboard-management/organizr
-- ✅ games-management/pufferpanel
-- ✅ gateway-management/ddns-updater
-- ✅ gateway-management/traefik-crowdsec
-- ✅ honeypot-management/tarpit
-- ✅ media-management/jellyfin
-- ✅ media-management/plex
-- ✅ password-management/bitwarden
-- ✅ storage-management/owncloud
-- ✅ system-management/portainer
-- ✅ system-management/watchtower
-- ✅ url-management/yourls
-- ✅ vpn-management/wireguard
+- ✅ adblocker/pihole
+- ✅ companion/cloudflare
+- ✅ dashboard/organizr
+- ✅ games/pufferpanel
+- ✅ gateway/ddns-updater
+- ✅ gateway/traefik-crowdsec
+- ✅ honeypot/tarpit
+- ✅ media/jellyfin
+- ✅ media/plex
+- ✅ password/bitwarden
+- ✅ storage/owncloud
+- ✅ system/portainer
+- ✅ system/watchtower
+- ✅ url/yourls
+- ✅ vpn/wireguard
 
 ### ⚠️ docker-stack.yml (Swarm) - Teilweise vorhanden
 
 **✅ Existiert bereits:**
-- ✅ adblocker-management/pihole/docker-stack.yml
-- ✅ gateway-management/traefik-crowdsec/docker-stack.yml
-- ✅ system-management/portainer/docker-stack.yml
+- ✅ adblocker/pihole/docker-stack.yml
+- ✅ gateway/traefik-crowdsec/docker-stack.yml
+- ✅ system/portainer/docker-stack.yml
 
 **❌ Fehlt noch:**
-- ❌ companion-management/cloudflare/docker-stack.yml (optional - nur wenn Swarm nötig)
-- ❌ system-management/watchtower/docker-stack.yml (optional - nur wenn Swarm nötig)
+- ❌ companion/cloudflare/docker-stack.yml (optional - nur wenn Swarm nötig)
+- ❌ system/watchtower/docker-stack.yml (optional - nur wenn Swarm nötig)
 - ❌ Alle anderen Services (nicht kritisch, nur wenn Swarm gewünscht)
 
 ### ❌ docker-compose.rootless.yml (Rootless) - ALLE fehlen
 
 **Kritisch (müssen erstellt werden):**
-- ❌ **companion-management/cloudflare/docker-compose.rootless.yml**
+- ❌ **companion/cloudflare/docker-compose.rootless.yml**
   - Grund: `/var/run/docker.sock` → `${XDG_RUNTIME_DIR}/docker.sock`
   
-- ❌ **gateway-management/traefik-crowdsec/docker-compose.rootless.yml**
+- ❌ **gateway/traefik-crowdsec/docker-compose.rootless.yml**
   - Grund: `/var/run/docker.sock` + `/var/log/traefik` + `/var/log/auth.log`
   - Komplex: Log-Verzeichnisse + Docker Socket
   
-- ❌ **system-management/portainer/docker-compose.rootless.yml**
+- ❌ **system/portainer/docker-compose.rootless.yml**
   - Grund: `/var/run/docker.sock` → `${XDG_RUNTIME_DIR}/docker.sock`
   
-- ❌ **system-management/watchtower/docker-compose.rootless.yml**
+- ❌ **system/watchtower/docker-compose.rootless.yml**
   - Grund: `/var/run/docker.sock` → `${XDG_RUNTIME_DIR}/docker.sock`
 
 **Optional (nur Ports < 1024, aber CAP_NET_BIND_SERVICE sollte reichen):**
-- ⚠️ **adblocker-management/pihole/docker-compose.rootless.yml**
+- ⚠️ **adblocker/pihole/docker-compose.rootless.yml**
   - Grund: Port 53 (privileged port)
   - Aber: Mit CAP_NET_BIND_SERVICE sollte normale docker-compose.yml funktionieren
   - **Entscheidung:** Erstmal nicht nötig, nur wenn Probleme auftreten
 
 **Nicht betroffen (keine Änderung nötig):**
-- ✅ dashboard-management/organizr (kein Docker Socket, keine System-Pfade)
-- ✅ games-management/pufferpanel (kein Docker Socket, keine System-Pfade)
-- ✅ gateway-management/ddns-updater (kein Docker Socket, keine System-Pfade)
-- ✅ honeypot-management/tarpit (kein Docker Socket, keine System-Pfade)
-- ✅ media-management/jellyfin (kein Docker Socket, keine System-Pfade)
-- ✅ media-management/plex (kein Docker Socket, keine System-Pfade)
-- ✅ password-management/bitwarden (kein Docker Socket, keine System-Pfade)
-- ✅ storage-management/owncloud (kein Docker Socket, keine System-Pfade)
-- ✅ url-management/yourls (kein Docker Socket, keine System-Pfade)
-- ✅ vpn-management/wireguard (kein Docker Socket, keine System-Pfade)
+- ✅ dashboard/organizr (kein Docker Socket, keine System-Pfade)
+- ✅ games/pufferpanel (kein Docker Socket, keine System-Pfade)
+- ✅ gateway/ddns-updater (kein Docker Socket, keine System-Pfade)
+- ✅ honeypot/tarpit (kein Docker Socket, keine System-Pfade)
+- ✅ media/jellyfin (kein Docker Socket, keine System-Pfade)
+- ✅ media/plex (kein Docker Socket, keine System-Pfade)
+- ✅ password/bitwarden (kein Docker Socket, keine System-Pfade)
+- ✅ storage/owncloud (kein Docker Socket, keine System-Pfade)
+- ✅ url/yourls (kein Docker Socket, keine System-Pfade)
+- ✅ vpn/wireguard (kein Docker Socket, keine System-Pfade)
 
 ---
 
