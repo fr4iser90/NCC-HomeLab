@@ -250,10 +250,14 @@ echo "== arch resolver =="
 export COMPUTE_VARIANT=arm
 assert_eq "ollama arm ctx" "$ROOT/catalog/compute/ollama/arm" "$(resolve_compose_context "$ROOT/catalog/compute/ollama")"
 assert_eq "comfyui arm ctx" "$ROOT/catalog/compute/comfyui/arm" "$(resolve_compose_context "$ROOT/catalog/compute/comfyui")"
+assert_eq "comfyui-trellis arm ctx" "$ROOT/catalog/compute/comfyui-trellis/arm" "$(resolve_compose_context "$ROOT/catalog/compute/comfyui-trellis")"
+# arch-neutral whisper services stay at service root even when VARIANT=arm
+assert_eq "faster-whisper root ctx" "$ROOT/catalog/compute/faster-whisper" "$(resolve_compose_context "$ROOT/catalog/compute/faster-whisper")"
 export COMPUTE_VARIANT=cpu
 assert_eq "ollama cpu ctx" "$ROOT/catalog/compute/ollama/cpu" "$(resolve_compose_context "$ROOT/catalog/compute/ollama")"
 # x86 comfyui falls back to service root (compose.yaml)
 assert_eq "comfyui cpu/root ctx" "$ROOT/catalog/compute/comfyui" "$(resolve_compose_context "$ROOT/catalog/compute/comfyui")"
+assert_eq "kimodo root ctx" "$ROOT/catalog/compute/kimodo" "$(resolve_compose_context "$ROOT/catalog/compute/kimodo")"
 unset COMPUTE_VARIANT
 
 echo "== profile paths =="

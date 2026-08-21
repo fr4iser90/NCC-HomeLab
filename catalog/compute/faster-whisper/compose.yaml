@@ -1,0 +1,31 @@
+# faster-whisper (CTranslate2) — one-shot CLI, not a long-running daemon.
+#   mkdir -p audio && cp your.wav audio/audio.wav
+#   docker compose run --rm faster-whisper
+#   docker compose run --rm faster-whisper /data/me.mp3 --model base
+#
+# GPU (Jetson / jetpack-nixos CDI): uncomment devices + env, then:
+#   docker compose run --rm faster-whisper --device cuda --compute-type float16
+services:
+  faster-whisper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: faster-whisper:local
+    container_name: faster-whisper
+    volumes:
+      - ./audio:/data:ro
+      - huggingface-cache:/root/.cache/huggingface
+    # devices:
+    #   - nvidia.com/gpu=all
+    # environment:
+    #   NVIDIA_VISIBLE_DEVICES: all
+    #   NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    networks:
+      - ai-net
+
+volumes:
+  huggingface-cache:
+
+networks:
+  ai-net:
+    external: true

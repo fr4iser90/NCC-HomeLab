@@ -11,3 +11,8 @@ services:
   - compute/open-webui
   # - compute/opencode
   # - compute/llama-cpp
+  # - compute/comfyui
+  # - compute/comfyui-trellis
+  # - compute/faster-whisper
+  # - compute/whisper-cpp
+  # - compute/openai-whisper

@@ -1,0 +1,44 @@
+# ComfyUI + Trellis2 (aarch64 / Jetson). Port 8189 so it can coexist with plain comfyui (8188).
+# GPU: hardware.nvidia-container-toolkit + CDI (jetpack-nixos).
+# Build is long (torchvision); Orin Nano: COMPILE_JOBS=2 in Dockerfile args.
+services:
+  comfyui-trellis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMFYUI_REF: v0.18.2
+        TORCH_CUDA_ARCH_LIST: "8.7"
+        COMPILE_JOBS: 2
+    image: comfyui-trellis-local:latest
+    container_name: comfyui-trellis
+    command:
+      [
+        "python3",
+        "main.py",
+        "--listen",
+        "0.0.0.0",
+        "--port",
+        "8188",
+        "--novram",
+        "--disable-pinned-memory",
+      ]
+    restart: unless-stopped
+    ports:
+      - "8189:8188"
+    volumes:
+      - ./models:/app/models
+      - ./output:/app/output
+      - ./input:/app/input
+    devices:
+      - nvidia.com/gpu=all
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,graphics
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    external: true

@@ -10,6 +10,11 @@ catalog/compute/comfyui/data/
 catalog/compute/**/models/**
 !catalog/compute/**/models/Modelfile*
 !catalog/compute/**/models/.gitkeep
+catalog/compute/**/audio/
+catalog/compute/**/input/
+catalog/compute/**/output/
+catalog/compute/kimodo/checkpoints/
+catalog/compute/kimodo/hf-cache/
 catalog/compute/opencode/**/container-data/
 catalog/compute/opencode/**/projects/
 catalog/compute/opencode/**/user-data/

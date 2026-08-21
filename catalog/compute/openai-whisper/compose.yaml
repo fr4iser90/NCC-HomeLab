@@ -1,0 +1,26 @@
+# openai-whisper — CLI `whisper`. Example:
+#   mkdir -p audio/out && cp clip.wav audio/audio.wav
+#   docker compose run --rm openai-whisper /data/audio.wav --model tiny --output_dir /data/out
+#
+# GPU (Jetson / CDI): uncomment devices; whisper supports --device cuda.
+# Image pulls PyTorch — build/download can be large and slow.
+services:
+  openai-whisper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openai-whisper:local
+    container_name: openai-whisper
+    volumes:
+      - ./audio:/data
+    # devices:
+    #   - nvidia.com/gpu=all
+    # environment:
+    #   NVIDIA_VISIBLE_DEVICES: all
+    #   NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    external: true

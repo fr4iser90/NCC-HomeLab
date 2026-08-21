@@ -1,0 +1,69 @@
+# Kimodo interactive demo + text-encoder (NGC PyTorch, x86_64 + NVIDIA GPU).
+# CDI / toolkit: devices nvidia.com/gpu=all (same pattern as other compute stacks).
+# Classic nvidia-docker: swap devices for deploy.resources if needed.
+#
+# Checkpoints: download from Hugging Face (nvidia/Kimodo-*) into ./checkpoints
+# HF token: optional bind of host token into hf-cache/
+#
+#   docker network create ai-net
+#   mkdir -p checkpoints hf-cache
+#   docker compose up -d --build
+services:
+  text-encoder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kimodo:local
+    container_name: kimodo-text-encoder
+    working_dir: /workspace
+    command: python -m kimodo.scripts.run_text_encoder_server
+    volumes:
+      - ./checkpoints:/workspace/checkpoints:ro
+      - ./hf-cache:/workspace/.cache/huggingface
+    ports:
+      - "9550:9550"
+    environment:
+      - HF_HOME=/workspace/.cache/huggingface
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    shm_size: "16gb"
+    ipc: host
+    devices:
+      - nvidia.com/gpu=all
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "curl -fsS http://localhost:9550/ > /dev/null"]
+      interval: 3s
+      timeout: 2s
+      retries: 40
+    networks:
+      - ai-net
+
+  demo:
+    image: kimodo:local
+    container_name: kimodo-demo
+    working_dir: /workspace
+    command: python -m kimodo.demo
+    volumes:
+      - ./checkpoints:/workspace/checkpoints:ro
+      - ./hf-cache:/workspace/.cache/huggingface
+    ports:
+      - "${SERVER_PORT:-7860}:${SERVER_PORT:-7860}"
+    environment:
+      - TEXT_ENCODER_URL=http://text-encoder:9550/
+      - SERVER_PORT=${SERVER_PORT:-7860}
+      - HF_HOME=/workspace/.cache/huggingface
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    shm_size: "16gb"
+    ipc: host
+    devices:
+      - nvidia.com/gpu=all
+    depends_on:
+      text-encoder:
+        condition: service_healthy
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    external: true

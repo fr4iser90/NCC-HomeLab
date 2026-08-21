@@ -20,7 +20,7 @@ declare -gA MANAGEMENT_CATEGORIES=(
     ["vpn"]="wireguard"
     ["system"]="portainer watchtower"
     ["games"]="pufferpanel"
-    ["compute"]="ollama llama-cpp opencode comfyui open-webui"
+    ["compute"]="ollama llama-cpp opencode comfyui comfyui-trellis open-webui faster-whisper whisper-cpp openai-whisper kimodo"
 )
 
 # Get container category

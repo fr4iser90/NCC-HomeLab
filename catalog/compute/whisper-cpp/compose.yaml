@@ -1,0 +1,24 @@
+# whisper.cpp — fetch a model once, then run:
+#   mkdir -p audio models
+#   wget -O models/ggml-tiny.bin \
+#     https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
+#   cp clip.wav audio/audio.wav
+#   docker compose run --rm whisper-cpp -m /models/ggml-tiny.bin /data/audio.wav
+#
+# GPU needs a separate cuBLAS/CUDA whisper.cpp build; this image is CPU-only.
+services:
+  whisper-cpp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: whisper-cpp:local
+    container_name: whisper-cpp
+    volumes:
+      - ./audio:/data:ro
+      - ./models:/models:ro
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    external: true

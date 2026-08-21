@@ -10,3 +10,7 @@ services:
   - compute/opencode
   # - compute/comfyui
   # - compute/open-webui
+  # - compute/faster-whisper
+  # - compute/whisper-cpp
+  # - compute/openai-whisper
+  # - compute/kimodo
